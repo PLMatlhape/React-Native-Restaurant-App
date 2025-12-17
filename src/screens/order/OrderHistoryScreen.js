@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator
-} from 'react';
+} from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { firestoreService } from '../../services/firebase/firestoreService';
 import { COLORS, ORDER_STATUS } from '../../utils/constants';
