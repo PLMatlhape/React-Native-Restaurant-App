@@ -1,0 +1,299 @@
+{
+    "foodItems": [
+      {
+        "name": "Espresso",
+        "description": "Strong and bold coffee shot made from finely ground beans",
+        "price": 25,
+        "category": "Coffee",
+        "imageUrl": ""
+      },
+      {
+        "name": "Americano",
+        "description": "Espresso diluted with hot water for a smooth taste",
+        "price": 28,
+        "category": "Coffee",
+        "imageUrl": ""
+      },
+      {
+        "name": "Latte",
+        "description": "Espresso with steamed milk and light foam",
+        "price": 32,
+        "category": "Coffee",
+        "imageUrl": ""
+      },
+      {
+        "name": "English Breakfast Tea",
+        "description": "Classic black tea blend with robust flavor",
+        "price": 22,
+        "category": "Tea",
+        "imageUrl": ""
+      },
+      {
+        "name": "Green Tea",
+        "description": "Refreshing and healthy green tea",
+        "price": 20,
+        "category": "Tea",
+        "imageUrl": ""
+      },
+      {
+        "name": "Rooibos Tea",
+        "description": "South African red bush tea, naturally caffeine-free",
+        "price": 20,
+        "category": "Tea",
+        "imageUrl": ""
+      },
+      {
+        "name": "Cappuccino Classic",
+        "description": "Traditional cappuccino with equal parts espresso, steamed milk, and foam",
+        "price": 35,
+        "category": "Cappuccino",
+        "imageUrl": ""
+      },
+      {
+        "name": "Vanilla Cappuccino",
+        "description": "Cappuccino with sweet vanilla flavor",
+        "price": 38,
+        "category": "Cappuccino",
+        "imageUrl": ""
+      },
+      {
+        "name": "Caramel Cappuccino",
+        "description": "Cappuccino with rich caramel drizzle",
+        "price": 38,
+        "category": "Cappuccino",
+        "imageUrl": ""
+      },
+      {
+        "name": "Belgian Waffle",
+        "description": "Classic Belgian style waffle, light and crispy",
+        "price": 45,
+        "category": "Waffles",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Waffle",
+        "description": "Waffle topped with rich chocolate sauce",
+        "price": 50,
+        "category": "Waffles",
+        "imageUrl": ""
+      },
+      {
+        "name": "Strawberry Waffle",
+        "description": "Waffle with fresh strawberries and whipped cream",
+        "price": 52,
+        "category": "Waffles",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Cake",
+        "description": "Rich chocolate layer cake with chocolate frosting",
+        "price": 40,
+        "category": "Cakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Carrot Cake",
+        "description": "Moist carrot cake with cream cheese frosting",
+        "price": 42,
+        "category": "Cakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Red Velvet Cake",
+        "description": "Classic red velvet with cream cheese frosting",
+        "price": 45,
+        "category": "Cakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Cheesecake",
+        "description": "Creamy New York style cheesecake",
+        "price": 48,
+        "category": "Cakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Cinnamon Churros",
+        "description": "Crispy churros coated with cinnamon sugar",
+        "price": 35,
+        "category": "Churros",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Churros",
+        "description": "Churros with chocolate dipping sauce",
+        "price": 38,
+        "category": "Churros",
+        "imageUrl": ""
+      },
+      {
+        "name": "Butter Croissant",
+        "description": "Flaky French butter croissant",
+        "price": 25,
+        "category": "Croissants",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Croissant",
+        "description": "Croissant filled with chocolate",
+        "price": 30,
+        "category": "Croissants",
+        "imageUrl": ""
+      },
+      {
+        "name": "Almond Croissant",
+        "description": "Croissant with almond cream filling",
+        "price": 32,
+        "category": "Croissants",
+        "imageUrl": ""
+      },
+      {
+        "name": "Nutella Crepe",
+        "description": "Thin crepe spread with Nutella",
+        "price": 38,
+        "category": "Crepes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Strawberry Crepe",
+        "description": "Crepe with fresh strawberries and cream",
+        "price": 42,
+        "category": "Crepes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Banana Nutella Crepe",
+        "description": "Crepe with banana and Nutella",
+        "price": 45,
+        "category": "Crepes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Blueberry Muffin",
+        "description": "Moist muffin packed with fresh blueberries",
+        "price": 28,
+        "category": "Muffins",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Chip Muffin",
+        "description": "Muffin loaded with chocolate chips",
+        "price": 30,
+        "category": "Muffins",
+        "imageUrl": ""
+      },
+      {
+        "name": "Banana Nut Muffin",
+        "description": "Muffin with banana and walnuts",
+        "price": 30,
+        "category": "Muffins",
+        "imageUrl": ""
+      },
+      {
+        "name": "Glazed Donut",
+        "description": "Classic glazed ring donut",
+        "price": 22,
+        "category": "Donuts",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Donut",
+        "description": "Donut with chocolate frosting",
+        "price": 25,
+        "category": "Donuts",
+        "imageUrl": ""
+      },
+      {
+        "name": "Strawberry Donut",
+        "description": "Donut with strawberry glaze",
+        "price": 25,
+        "category": "Donuts",
+        "imageUrl": ""
+      },
+      {
+        "name": "Boston Cream Donut",
+        "description": "Custard-filled donut with chocolate topping",
+        "price": 28,
+        "category": "Donuts",
+        "imageUrl": ""
+      },
+      {
+        "name": "Oreo Milkshake",
+        "description": "Creamy milkshake blended with Oreo cookies",
+        "price": 35,
+        "category": "Oreos",
+        "imageUrl": ""
+      },
+      {
+        "name": "Oreo Cheesecake",
+        "description": "Cheesecake with Oreo cookie crust",
+        "price": 45,
+        "category": "Oreos",
+        "imageUrl": ""
+      },
+      {
+        "name": "Oreo Ice Cream",
+        "description": "Vanilla ice cream with Oreo pieces",
+        "price": 32,
+        "category": "Oreos",
+        "imageUrl": ""
+      },
+      {
+        "name": "Buttermilk Pancakes",
+        "description": "Stack of fluffy buttermilk pancakes",
+        "price": 40,
+        "category": "Pancakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Chip Pancakes",
+        "description": "Pancakes with chocolate chips",
+        "price": 45,
+        "category": "Pancakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Blueberry Pancakes",
+        "description": "Pancakes with fresh blueberries",
+        "price": 45,
+        "category": "Pancakes",
+        "imageUrl": ""
+      },
+      {
+        "name": "Swiss Roll",
+        "description": "Classic swiss roll with vanilla cream",
+        "price": 35,
+        "category": "Cake Rolls",
+        "imageUrl": ""
+      },
+      {
+        "name": "Chocolate Roll",
+        "description": "Chocolate sponge roll with chocolate cream",
+        "price": 38,
+        "category": "Cake Rolls",
+        "imageUrl": ""
+      },
+      {
+        "name": "Strawberry Roll",
+        "description": "Vanilla roll with strawberry cream",
+        "price": 38,
+        "category": "Cake Rolls",
+        "imageUrl": ""
+      }
+    ],
+    "categories": [
+      { "name": "Coffee", "icon": "☕", "order": 1 },
+      { "name": "Tea", "icon": "🍵", "order": 2 },
+      { "name": "Cappuccino", "icon": "☕", "order": 3 },
+      { "name": "Waffles", "icon": "🧇", "order": 4 },
+      { "name": "Cakes", "icon": "🍰", "order": 5 },
+      { "name": "Churros", "icon": "🥨", "order": 6 },
+      { "name": "Croissants", "icon": "🥐", "order": 7 },
+      { "name": "Crepes", "icon": "🥞", "order": 8 },
+      { "name": "Muffins", "icon": "🧁", "order": 9 },
+      { "name": "Donuts", "icon": "🍩", "order": 10 },
+      { "name": "Oreos", "icon": "🍪", "order": 11 },
+      { "name": "Pancakes", "icon": "🥞", "order": 12 },
+      { "name": "Cake Rolls", "icon": "🍥", "order": 13 }
+    ]
+  }
