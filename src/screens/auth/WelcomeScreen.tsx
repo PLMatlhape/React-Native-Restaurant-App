@@ -1,29 +1,56 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  StatusBar
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { RootStackNavigationProp } from '../../types';
 import { COLORS, SCREEN_NAMES } from '../../utils/constants';
 
-const WelcomeScreen = ({ navigation }) => {
+// Conditionally import LottieView - it may fail on web
+let LottieView: any = null;
+let CoffeeLoveAnimation: any = null;
+
+try {
+  LottieView = require('lottie-react-native').default;
+  CoffeeLoveAnimation = require('../../../assets/icon/Coffee love.json');
+} catch (error) {
+  console.log('Lottie not available, using fallback');
+}
+
+interface WelcomeScreenProps {
+  navigation: RootStackNavigationProp;
+}
+
+const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
+  const canUseLottie = Platform.OS !== 'web' && LottieView && CoffeeLoveAnimation;
+
   return (
     <LinearGradient
       colors={[COLORS.background, COLORS.secondary]}
       style={styles.container}
     >
       <StatusBar barStyle="dark-content" />
-      
+
       <View style={styles.content}>
         {/* Logo and Title */}
         <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoIcon}>☕</Text>
-          </View>
+          {canUseLottie ? (
+            <LottieView
+              source={CoffeeLoveAnimation}
+              autoPlay
+              loop
+              style={styles.lottieAnimation}
+            />
+          ) : (
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoIcon}>☕</Text>
+            </View>
+          )}
           <Text style={styles.title}>Coffee Shop</Text>
           <Text style={styles.subtitle}>Begin here</Text>
         </View>
@@ -32,23 +59,21 @@ const WelcomeScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate(SCREEN_NAMES.LOGIN)}
+            onPress={() => navigation.navigate(SCREEN_NAMES.LOGIN as any)}
           >
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
-            onPress={() => navigation.navigate(SCREEN_NAMES.REGISTER)}
+            onPress={() => navigation.navigate(SCREEN_NAMES.REGISTER as any)}
           >
             <Text style={[styles.buttonText, styles.secondaryButtonText]}>
               Sign Up
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate('MainApp')}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate('MainApp')}>
             <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
         </View>
@@ -70,6 +95,11 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
+  },
+  lottieAnimation: {
+    width: 180,
+    height: 180,
+    marginBottom: 10,
   },
   logoCircle: {
     width: 120,

@@ -1,9 +1,18 @@
-import { ActivityIndicator, Modal, Platform, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import {
+    ActivityIndicator,
+    Modal,
+    Platform,
+    StyleSheet,
+    Text,
+    View
+} from 'react-native';
+import { LoadingProps } from '../../types';
 import { COLORS } from '../../utils/constants';
 
 // Conditionally import LottieView - it may fail on web
-let LottieView = null;
-let CoffeeLoveAnimation = null;
+let LottieView: any = null;
+let CoffeeLoveAnimation: any = null;
 
 try {
   LottieView = require('lottie-react-native').default;
@@ -12,21 +21,21 @@ try {
   console.log('Lottie not available, using fallback');
 }
 
-const Loading = ({
+const Loading: React.FC<LoadingProps> = ({
   visible = true,
   message = 'Loading...',
   fullScreen = false,
   size = 'large',
   color = COLORS.primary,
   overlay = false,
-  useLottie = Platform.OS !== 'web', // Disable Lottie on web by default
-  lottieSize = 150
+  useLottie = Platform.OS !== 'web',
+  lottieSize = 150,
 }) => {
   if (!visible) return null;
 
   const canUseLottie = useLottie && LottieView && CoffeeLoveAnimation;
 
-  const renderLoadingIndicator = () => {
+  const renderLoadingIndicator = (): React.ReactElement => {
     if (canUseLottie) {
       return (
         <LottieView

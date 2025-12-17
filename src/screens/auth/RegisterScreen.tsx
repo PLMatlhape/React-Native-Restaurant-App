@@ -8,15 +8,34 @@ import {
   ScrollView,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, VALIDATION_MESSAGES } from '../../utils/constants';
+import { RootStackNavigationProp, FormErrors, RegisterData } from '../../types';
 
-const RegisterScreen = ({ navigation }) => {
+interface RegisterScreenProps {
+  navigation: RootStackNavigationProp;
+}
+
+interface FormData {
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  contactNumber: string;
+  address: string;
+  cardNumber: string;
+  cardHolder: string;
+  expiryDate: string;
+  cvv: string;
+}
+
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const { register } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [loading, setLoading] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     surname: '',
     email: '',
@@ -27,12 +46,12 @@ const RegisterScreen = ({ navigation }) => {
     cardNumber: '',
     cardHolder: '',
     expiryDate: '',
-    cvv: ''
+    cvv: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) newErrors.name = VALIDATION_MESSAGES.REQUIRED;
     if (!formData.surname.trim()) newErrors.surname = VALIDATION_MESSAGES.REQUIRED;
@@ -62,7 +81,7 @@ const RegisterScreen = ({ navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async (): Promise<void> => {
     if (!validateForm()) {
       Alert.alert('Validation Error', 'Please fill in all required fields correctly.');
       return;
@@ -77,24 +96,24 @@ const RegisterScreen = ({ navigation }) => {
       cardNumber: formData.cardNumber,
       cardHolder: formData.cardHolder,
       expiryDate: formData.expiryDate,
-      cvv: formData.cvv
+      cvv: formData.cvv,
     });
 
     setLoading(false);
 
     if (result.success) {
       Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('MainApp') }
+        { text: 'OK', onPress: () => navigation.navigate('MainApp') },
       ]);
     } else {
-      Alert.alert('Registration Failed', result.error);
+      Alert.alert('Registration Failed', result.error || 'An error occurred');
     }
   };
 
-  const updateField = (field, value) => {
+  const updateField = (field: keyof FormData, value: string): void => {
     setFormData({ ...formData, [field]: value });
     if (errors[field]) {
-      setErrors({ ...errors, [field]: '' });
+      setErrors({ ...errors, [field]: undefined });
     }
   };
 
@@ -103,7 +122,11 @@ const RegisterScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Sign up to get started</Text>
@@ -112,7 +135,7 @@ const RegisterScreen = ({ navigation }) => {
         <View style={styles.form}>
           {/* Personal Information */}
           <Text style={styles.sectionTitle}>Personal Information</Text>
-          
+
           <TextInput
             style={[styles.input, errors.name && styles.inputError]}
             placeholder="Name"
@@ -160,7 +183,9 @@ const RegisterScreen = ({ navigation }) => {
             secureTextEntry
             placeholderTextColor={COLORS.textLight}
           />
-          {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+          {errors.confirmPassword && (
+            <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+          )}
 
           {/* Contact Information */}
           <Text style={styles.sectionTitle}>Contact Information</Text>
@@ -173,7 +198,9 @@ const RegisterScreen = ({ navigation }) => {
             keyboardType="phone-pad"
             placeholderTextColor={COLORS.textLight}
           />
-          {errors.contactNumber && <Text style={styles.errorText}>{errors.contactNumber}</Text>}
+          {errors.contactNumber && (
+            <Text style={styles.errorText}>{errors.contactNumber}</Text>
+          )}
 
           <TextInput
             style={[styles.input, styles.textArea, errors.address && styles.inputError]}
@@ -220,7 +247,9 @@ const RegisterScreen = ({ navigation }) => {
                 maxLength={5}
                 placeholderTextColor={COLORS.textLight}
               />
-              {errors.expiryDate && <Text style={styles.errorText}>{errors.expiryDate}</Text>}
+              {errors.expiryDate && (
+                <Text style={styles.errorText}>{errors.expiryDate}</Text>
+              )}
             </View>
             <View style={styles.halfWidth}>
               <TextInput
@@ -237,6 +266,7 @@ const RegisterScreen = ({ navigation }) => {
             </View>
           </View>
 
+          {/* Submit Button */}
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleRegister}
@@ -265,6 +295,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 120, // Extra padding for submit button visibility
   },
   header: {
     marginTop: 20,

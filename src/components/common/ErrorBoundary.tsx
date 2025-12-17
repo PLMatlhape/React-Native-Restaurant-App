@@ -1,41 +1,53 @@
-import React from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../../utils/constants';
+
+declare const __DEV__: boolean;
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+}
 
 /**
  * Error Boundary Component
  * Catches JavaScript errors in child components and displays a fallback UI
  */
-class ErrorBoundary extends React.Component {
-  constructor(props) {
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error: Error): Partial<State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({
       error: error,
-      errorInfo: errorInfo
+      errorInfo: errorInfo,
     });
-    
+
     // Log error to console in development
     if (__DEV__) {
       console.error('Error Boundary caught an error:', error, errorInfo);
     }
-    
+
     // You can also log the error to an error reporting service here
     // Example: logErrorToService(error, errorInfo);
   }
 
-  handleRetry = () => {
+  handleRetry = (): void => {
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
@@ -45,12 +57,10 @@ class ErrorBoundary extends React.Component {
             <Text style={styles.message}>
               We apologize for the inconvenience. Please try again.
             </Text>
-            
+
             {__DEV__ && this.state.error && (
               <View style={styles.errorDetails}>
-                <Text style={styles.errorText}>
-                  {this.state.error.toString()}
-                </Text>
+                <Text style={styles.errorText}>{this.state.error.toString()}</Text>
               </View>
             )}
 

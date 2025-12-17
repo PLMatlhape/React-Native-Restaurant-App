@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React from 'react';
 import { Text } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { COLORS, SCREEN_NAMES } from '../utils/constants';
@@ -15,7 +14,6 @@ import WelcomeScreen from '../screens/auth/WelcomeScreen';
 // Food Screens
 import FoodDetailScreen from '../screens/food/FoodDetailScreen';
 import HomeScreen from '../screens/food/HomeScreen';
-import MenuScreen from '../screens/food/MenuScreen';
 
 // Cart Screens
 import CartScreen from '../screens/cart/CartScreen';

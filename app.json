@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "React-Native-Restaurant-App",
+    "name": "Coffee Shop",
     "slug": "React-Native-Restaurant-App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "reactnativerestaurantapp",
+    "icon": "./assets/icon/icons8-coffee-cup-64.png",
+    "scheme": "coffeeshop",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,28 +13,26 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#6F4E37",
+        "foregroundImage": "./assets/icon/icons8-coffee-cup-64.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/icon/icons8-coffee-cup-64.png"
     },
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/icon/icons8-coffee-cup-64.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#6F4E37",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#3E2723"
           }
         }
       ]

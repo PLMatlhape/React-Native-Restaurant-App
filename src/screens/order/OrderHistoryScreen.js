@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  ActivityIndicator,
   FlatList,
-  TouchableOpacity,
   RefreshControl,
-  ActivityIndicator
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { firestoreService } from '../../services/firebase/firestoreService';

@@ -1,13 +1,13 @@
-import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import ErrorBoundary from './src/components/common/ErrorBoundary';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
-import ErrorBoundary from './src/components/common/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 
-export default function App() {
+const App: React.FC = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
@@ -22,4 +22,6 @@ export default function App() {
       </ErrorBoundary>
     </GestureHandlerRootView>
   );
-}
+};
+
+export default App;

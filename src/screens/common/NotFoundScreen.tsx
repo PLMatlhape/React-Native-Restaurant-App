@@ -1,18 +1,20 @@
+import React from 'react';
 import {
     Dimensions,
     Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
+import { RootStackNavigationProp } from '../../types';
 import { COLORS } from '../../utils/constants';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 // Conditionally import LottieView - it may fail on web
-let LottieView = null;
-let Error404Animation = null;
+let LottieView: any = null;
+let Error404Animation: any = null;
 
 try {
   LottieView = require('lottie-react-native').default;
@@ -21,27 +23,28 @@ try {
   console.log('Lottie not available, using fallback');
 }
 
+interface NotFoundScreenProps {
+  navigation?: RootStackNavigationProp;
+  title?: string;
+  message?: string;
+  onGoBack?: () => void;
+  onGoHome?: () => void;
+}
+
 /**
  * NotFoundScreen Component
- * 
+ *
  * A 404 error page with animated illustration.
  * Displays when user navigates to a non-existent route or resource.
- * 
- * @param {Object} props
- * @param {Object} props.navigation - Navigation object for routing
- * @param {string} props.title - Custom title (default: "Oops! Page Not Found")
- * @param {string} props.message - Custom message
- * @param {Function} props.onGoBack - Custom go back handler
- * @param {Function} props.onGoHome - Custom go home handler
  */
-const NotFoundScreen = ({ 
+const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
   navigation,
   title = "Oops! Page Not Found",
   message = "The page you're looking for seems to have wandered off for a coffee break.",
   onGoBack,
-  onGoHome
+  onGoHome,
 }) => {
-  const handleGoBack = () => {
+  const handleGoBack = (): void => {
     if (onGoBack) {
       onGoBack();
     } else if (navigation?.canGoBack()) {
@@ -49,11 +52,11 @@ const NotFoundScreen = ({
     }
   };
 
-  const handleGoHome = () => {
+  const handleGoHome = (): void => {
     if (onGoHome) {
       onGoHome();
     } else if (navigation) {
-      navigation.navigate('Home');
+      navigation.navigate('MainApp');
     }
   };
 
@@ -84,18 +87,12 @@ const NotFoundScreen = ({
 
       {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity 
-          style={styles.primaryButton}
-          onPress={handleGoHome}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
           <Text style={styles.primaryButtonText}>🏠 Go Home</Text>
         </TouchableOpacity>
 
         {(navigation?.canGoBack() || onGoBack) && (
-          <TouchableOpacity 
-            style={styles.secondaryButton}
-            onPress={handleGoBack}
-          >
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleGoBack}>
             <Text style={styles.secondaryButtonText}>← Go Back</Text>
           </TouchableOpacity>
         )}
