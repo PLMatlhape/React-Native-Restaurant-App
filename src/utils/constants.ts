@@ -8,7 +8,9 @@ export interface Colors {
   black: string;
   text: string;
   textLight: string;
+  textSecondary: string;
   border: string;
+  divider: string;
   error: string;
   success: string;
   warning: string;
@@ -26,7 +28,9 @@ export const COLORS: Colors = {
   black: '#000000',
   text: '#3E2723',
   textLight: '#795548',
+  textSecondary: '#8D6E63',
   border: '#BCAAA4',
+  divider: '#E0E0E0',
   error: '#D32F2F',
   success: '#388E3C',
   warning: '#F57C00',
