@@ -9,16 +9,48 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   MainApp: undefined;
+  Auth: undefined;
   AdminDashboard: undefined;
   NotFound: undefined;
 };
 
+// Auth Stack Navigator
+export type AuthStackParamList = {
+  Welcome: undefined;
+  Login: undefined;
+  Register: undefined;
+};
+
 // Main Tab Navigator
 export type MainTabParamList = {
+  HomeTab: undefined;
+  CartTab: undefined;
+  OrdersTab: undefined;
+  ProfileTab: undefined;
+  AdminTab: undefined;
+};
+
+// Home Stack Navigator
+export type HomeStackParamList = {
   Home: undefined;
-  Menu: undefined;
+  FoodDetail: { item: FoodItem };
+  Menu: { category?: string };
   Cart: undefined;
-  Orders: undefined;
+};
+
+// Cart Stack Navigator
+export type CartStackParamList = {
+  Cart: undefined;
+  Checkout: undefined;
+};
+
+// Orders Stack Navigator
+export type OrdersStackParamList = {
+  OrderHistory: undefined;
+};
+
+// Profile Stack Navigator
+export type ProfileStackParamList = {
   Profile: undefined;
 };
 
@@ -55,8 +87,12 @@ export interface User {
   contactNumber?: string;
   address?: string;
   role?: 'user' | 'admin';
-  createdAt?: Date;
-  updatedAt?: Date;
+  cardNumber?: string;
+  cardHolder?: string;
+  expiryDate?: string;
+  cvv?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface UserProfile {
@@ -79,15 +115,15 @@ export interface FoodItem {
   category: string;
   image?: string;
   imageUrl?: string;
-  isAvailable: boolean;
+  isAvailable?: boolean;
   rating?: number;
   reviews?: number;
   ingredients?: string[];
   allergens?: string[];
   preparationTime?: number;
   calories?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface Category {
