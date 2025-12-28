@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
     Dimensions,
     Platform,
@@ -14,14 +14,15 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 // Conditionally import LottieView - it may fail on web
 let LottieView: any = null;
-let Error404Animation: any = null;
 
 try {
   LottieView = require('lottie-react-native').default;
-  Error404Animation = require('../../../assets/icon/Error 404.json');
 } catch (error) {
   console.log('Lottie not available, using fallback');
 }
+
+// Lottie animation URL from lottie.host
+const ERROR_404_ANIMATION_URL = 'https://lottie.host/ec7b6347-8efc-42fb-ade8-567d180189bf/rKEeuHreP6.json';
 
 interface NotFoundScreenProps {
   navigation?: RootStackNavigationProp;
@@ -44,6 +45,15 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
   onGoBack,
   onGoHome,
 }) => {
+  const animationRef = useRef<any>(null);
+
+  // Force play animation on mount (handles reduced motion setting)
+  useEffect(() => {
+    if (animationRef.current) {
+      animationRef.current.play();
+    }
+  }, []);
+
   const handleGoBack = (): void => {
     if (onGoBack) {
       onGoBack();
@@ -60,7 +70,7 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
     }
   };
 
-  const canUseLottie = Platform.OS !== 'web' && LottieView && Error404Animation;
+  const canUseLottie = Platform.OS !== 'web' && LottieView;
 
   return (
     <View style={styles.container}>
@@ -68,9 +78,12 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
       <View style={styles.animationContainer}>
         {canUseLottie ? (
           <LottieView
-            source={Error404Animation}
-            autoPlay
-            loop
+            ref={animationRef}
+            source={{ uri: ERROR_404_ANIMATION_URL }}
+            autoPlay={true}
+            loop={true}
+            speed={3}
+            renderMode="AUTOMATIC"
             style={styles.animation}
           />
         ) : (

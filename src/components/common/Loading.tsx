@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
     ActivityIndicator,
     Modal,
@@ -12,14 +12,15 @@ import { COLORS } from '../../utils/constants';
 
 // Conditionally import LottieView - it may fail on web
 let LottieView: any = null;
-let CoffeeLoveAnimation: any = null;
 
 try {
   LottieView = require('lottie-react-native').default;
-  CoffeeLoveAnimation = require('../../../assets/icon/Coffee love.json');
 } catch (error) {
   console.log('Lottie not available, using fallback');
 }
+
+// Lottie animation URL from lottie.host
+const COFFEE_ANIMATION_URL = 'https://lottie.host/40c22274-9e6d-479b-8461-78d7d7d8bc5c/mRuXq2MJu1.json';
 
 const Loading: React.FC<LoadingProps> = ({
   visible = true,
@@ -29,19 +30,31 @@ const Loading: React.FC<LoadingProps> = ({
   color = COLORS.primary,
   overlay = false,
   useLottie = Platform.OS !== 'web',
-  lottieSize = 150,
+  lottieSize = 200,
 }) => {
+  const animationRef = useRef<any>(null);
+
+  // Force play animation on mount (handles reduced motion setting)
+  useEffect(() => {
+    if (animationRef.current) {
+      animationRef.current.play();
+    }
+  }, []);
+
   if (!visible) return null;
 
-  const canUseLottie = useLottie && LottieView && CoffeeLoveAnimation;
+  const canUseLottie = useLottie && LottieView;
 
   const renderLoadingIndicator = (): React.ReactElement => {
     if (canUseLottie) {
       return (
         <LottieView
-          source={CoffeeLoveAnimation}
-          autoPlay
-          loop
+          ref={animationRef}
+          source={{ uri: COFFEE_ANIMATION_URL }}
+          autoPlay={true}
+          loop={true}
+          speed={3}
+          renderMode="AUTOMATIC"
           style={{ width: lottieSize, height: lottieSize }}
         />
       );
@@ -82,7 +95,7 @@ const styles = StyleSheet.create({
   },
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F5E6D3', // Coffee shop beige/brown background
   },
   overlay: {
     flex: 1,
@@ -91,26 +104,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingBox: {
-    backgroundColor: COLORS.white,
+    backgroundColor: 'transparent', // No white box
     borderRadius: 16,
     padding: 30,
     alignItems: 'center',
     minWidth: 150,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    // Remove shadow since no box
   },
   loadingBoxLottie: {
     paddingTop: 10,
     paddingBottom: 20,
+    backgroundColor: 'transparent', // Ensure transparent
   },
   message: {
     marginTop: 10,
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4A3428', // Dark coffee brown text
     textAlign: 'center',
   },
 });

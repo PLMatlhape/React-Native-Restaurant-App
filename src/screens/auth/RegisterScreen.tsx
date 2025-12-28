@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { FormErrors, RootStackNavigationProp } from '../../types';
 import { COLORS, VALIDATION_MESSAGES } from '../../utils/constants';
-import { RootStackNavigationProp, FormErrors, RegisterData } from '../../types';
 
 interface RegisterScreenProps {
   navigation: RootStackNavigationProp;
