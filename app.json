@@ -17,11 +17,8 @@
         "foregroundImage": "./assets/icon/icons8-coffee-cup-64.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "bundler": "metro",
-      "favicon": "./assets/icon/icons8-coffee-cup-64.png"
+      "predictiveBackGestureEnabled": false,
+      "package": "com.matlhape.ReactNativeRestaurantApp"
     },
     "plugins": [
       [

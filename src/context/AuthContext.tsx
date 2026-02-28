@@ -1,16 +1,30 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User as FirebaseUser, onAuthStateChanged, Unsubscribe } from 'firebase/auth';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { authService } from '../services/firebase/authService';
-import { getAuthAsync } from '../services/firebase/config';
-import { AuthResult, User, UserProfile } from '../types';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+    User as FirebaseUser,
+    onAuthStateChanged,
+    Unsubscribe,
+} from "firebase/auth";
+import React, {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
+import { authService } from "../services/firebase/authService";
+import { auth } from "../services/firebase/config";
+import { AuthResult, User, UserProfile } from "../types";
 
 interface AuthContextType {
   user: FirebaseUser | null;
   userData: User | null;
   isAdmin: boolean;
   loading: boolean;
-  register: (email: string, password: string, userData: Partial<UserProfile>) => Promise<AuthResult>;
+  register: (
+    email: string,
+    password: string,
+    userData: Partial<UserProfile>,
+  ) => Promise<AuthResult>;
   login: (email: string, password: string) => Promise<AuthResult>;
   logout: () => Promise<AuthResult>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<AuthResult>;
@@ -32,53 +46,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let unsubscribe: Unsubscribe | null = null;
     let mounted = true;
 
-    const setupAuthListener = async () => {
-      try {
-        // Wait for auth to be initialized
-        const auth = await getAuthAsync();
-        
+    unsubscribe = onAuthStateChanged(
+      auth,
+      async (firebaseUser) => {
         if (!mounted) return;
-
-        unsubscribe = onAuthStateChanged(
-          auth,
-          async (firebaseUser) => {
-            if (!mounted) return;
-            try {
-              if (firebaseUser) {
-                setUser(firebaseUser);
-                // Fetch user data from Firestore
-                const result = await authService.getUserData(firebaseUser.uid);
-                if (result.success && result.data && mounted) {
-                  const userData = result.data as unknown as User;
-                  setUserData(userData);
-                  setIsAdmin(userData?.role === 'admin');
-                  // Cache user data
-                  await AsyncStorage.setItem('userData', JSON.stringify(result.data));
-                }
-              } else {
-                setUser(null);
-                setUserData(null);
-                setIsAdmin(false);
-                await AsyncStorage.removeItem('userData');
-              }
-            } catch (error) {
-              console.error('Auth state change error:', error);
-            } finally {
-              if (mounted) setLoading(false);
+        try {
+          if (firebaseUser) {
+            setUser(firebaseUser);
+            // Fetch user data from Firestore
+            const result = await authService.getUserData(firebaseUser.uid);
+            if (result.success && result.data && mounted) {
+              const userData = result.data as unknown as User;
+              setUserData(userData);
+              setIsAdmin(userData?.role === "admin");
+              // Cache user data
+              await AsyncStorage.setItem(
+                "userData",
+                JSON.stringify(result.data),
+              );
             }
-          },
-          (error) => {
-            console.error('Firebase auth error:', error);
-            if (mounted) setLoading(false);
+          } else {
+            setUser(null);
+            setUserData(null);
+            setIsAdmin(false);
+            await AsyncStorage.removeItem("userData");
           }
-        );
-      } catch (error) {
-        console.error('Auth setup error:', error);
+        } catch (error) {
+          console.error("Auth state change error:", error);
+        } finally {
+          if (mounted) setLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Firebase auth error:", error);
         if (mounted) setLoading(false);
-      }
-    };
-
-    setupAuthListener();
+      },
+    );
 
     return () => {
       mounted = false;
@@ -89,15 +92,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (
     email: string,
     password: string,
-    userDataInput: Partial<UserProfile>
+    userDataInput: Partial<UserProfile>,
   ): Promise<AuthResult> => {
     try {
       // Ensure required fields have default values
       const userData = {
-        name: userDataInput.name || '',
-        surname: userDataInput.surname || '',
-        contactNumber: userDataInput.contactNumber || '',
-        address: userDataInput.address || '',
+        name: userDataInput.name || "",
+        surname: userDataInput.surname || "",
+        contactNumber: userDataInput.contactNumber || "",
+        address: userDataInput.address || "",
         cardNumber: userDataInput.cardNumber,
         cardHolder: userDataInput.cardHolder,
         expiryDate: userDataInput.expiryDate,
@@ -113,7 +116,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<AuthResult> => {
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<AuthResult> => {
     try {
       const result = await authService.login(email, password);
       if (result.success && result.user) {
@@ -121,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (result.userData) {
           const userData = result.userData as unknown as User;
           setUserData(userData);
-          setIsAdmin(userData?.role === 'admin');
+          setIsAdmin(userData?.role === "admin");
         }
         return { success: true };
       }
@@ -146,10 +152,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>): Promise<AuthResult> => {
+  const updateProfile = async (
+    updates: Partial<UserProfile>,
+  ): Promise<AuthResult> => {
     try {
       if (!user) {
-        return { success: false, error: 'No user logged in' };
+        return { success: false, error: "No user logged in" };
       }
       const result = await authService.updateUserProfile(user.uid, updates);
       if (result.success) {
@@ -158,7 +166,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (userDataResult.success && userDataResult.data) {
           const userData = userDataResult.data as unknown as User;
           setUserData(userData);
-          await AsyncStorage.setItem('userData', JSON.stringify(userDataResult.data));
+          await AsyncStorage.setItem(
+            "userData",
+            JSON.stringify(userDataResult.data),
+          );
         }
         return { success: true };
       }
@@ -185,7 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

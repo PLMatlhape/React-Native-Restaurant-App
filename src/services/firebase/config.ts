@@ -1,8 +1,13 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore } from 'firebase/firestore';
-import { FirebaseStorage, getStorage } from 'firebase/storage';
-import { Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FirebaseApp, getApps, initializeApp } from "firebase/app";
+import {
+    Auth,
+    getAuth,
+    getReactNativePersistence,
+    initializeAuth,
+} from "firebase/auth";
+import { Firestore, getFirestore } from "firebase/firestore";
+import { FirebaseStorage, getStorage } from "firebase/storage";
 
 // Firebase configuration type
 interface FirebaseConfig {
@@ -16,19 +21,22 @@ interface FirebaseConfig {
 
 // Firebase configuration using environment variables (Expo public env vars)
 const firebaseConfig: FirebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "demo.firebaseapp.com",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "demo-project",
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "demo.appspot.com",
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abc123"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
 };
 
 // Validate Firebase config
-const isConfigured: boolean = !firebaseConfig.apiKey.includes('demo-');
+const isConfigured: boolean =
+  firebaseConfig.apiKey.length > 0 && firebaseConfig.projectId.length > 0;
 
 if (!isConfigured) {
-  console.warn('⚠️ Firebase is not configured. Running in demo mode.');
+  console.warn(
+    "⚠️ Firebase is not configured. Please add your Firebase config to .env",
+  );
 }
 
 // Initialize Firebase - check if already initialized
@@ -39,62 +47,24 @@ if (getApps().length === 0) {
   app = getApps()[0];
 }
 
-// Auth type import
-import type { Auth } from 'firebase/auth';
-
-// Auth singleton - initialized lazily
-let _auth: Auth | null = null;
-let _authInitPromise: Promise<Auth> | null = null;
-
-// Initialize auth asynchronously to avoid "Component auth has not been registered yet" error
-const initializeAuthAsync = async (): Promise<Auth> => {
-  if (_auth) return _auth;
-  
-  // Small delay to ensure React Native environment is ready
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  // Dynamic import
-  const firebaseAuth = await import('firebase/auth');
-  
-  if (Platform.OS === 'web') {
-    _auth = firebaseAuth.getAuth(app);
-  } else {
-    try {
-      // Try to initialize with persistence
-      // @ts-ignore - getReactNativePersistence exists at runtime
-      const persistence = firebaseAuth.getReactNativePersistence(AsyncStorage);
-      _auth = firebaseAuth.initializeAuth(app, {
-        persistence: persistence,
-      });
-    } catch (error: any) {
-      // Already initialized or other error - fallback to getAuth
-      if (error.code === 'auth/already-initialized') {
-        _auth = firebaseAuth.getAuth(app);
-      } else {
-        console.warn('Auth initialization warning:', error.message);
-        _auth = firebaseAuth.getAuth(app);
-      }
-    }
-  }
-  
-  return _auth;
-};
-
-// Get auth instance - returns promise
-export const getAuthAsync = (): Promise<Auth> => {
-  if (_auth) return Promise.resolve(_auth);
-  if (!_authInitPromise) {
-    _authInitPromise = initializeAuthAsync();
-  }
-  return _authInitPromise;
-};
-
-// Synchronous getter - may return null if not initialized
-export const getAuthSync = (): Auth | null => _auth;
+// Initialize Auth SYNCHRONOUSLY at module load time with React Native persistence.
+// This is the correct pattern for Firebase JS SDK in React Native.
+// The "Component auth has not been registered yet" error was caused by
+// using dynamic imports / lazy initialization. Firebase Auth must be
+// initialized synchronously right after initializeApp().
+let auth: Auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch (error: any) {
+  // If auth was already initialized (e.g. during hot reload), get existing instance
+  auth = getAuth(app);
+}
 
 // Initialize other services
-export const db: Firestore = getFirestore(app);
-export const storage: FirebaseStorage = getStorage(app);
-export const isFirebaseConfigured: boolean = isConfigured;
+const db: Firestore = getFirestore(app);
+const storage: FirebaseStorage = getStorage(app);
 
+export { app, auth, db, isConfigured as isFirebaseConfigured, storage };
 export default app;

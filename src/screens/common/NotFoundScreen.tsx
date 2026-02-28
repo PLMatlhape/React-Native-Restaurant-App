@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import LottieView from "lottie-react-native";
+import React, { useEffect, useRef } from "react";
 import {
     Dimensions,
     Platform,
@@ -6,23 +7,14 @@ import {
     Text,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { RootStackNavigationProp } from '../../types';
-import { COLORS } from '../../utils/constants';
+} from "react-native";
+import { RootStackNavigationProp } from "../../types";
+import { COLORS } from "../../utils/constants";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-// Conditionally import LottieView - it may fail on web
-let LottieView: any = null;
-
-try {
-  LottieView = require('lottie-react-native').default;
-} catch (error) {
-  console.log('Lottie not available, using fallback');
-}
-
-// Lottie animation URL from lottie.host
-const ERROR_404_ANIMATION_URL = 'https://lottie.host/ec7b6347-8efc-42fb-ade8-567d180189bf/rKEeuHreP6.json';
+// Local Lottie animation asset
+const ERROR_404_ANIMATION = require("../../../assets/icon/Error 404.json");
 
 interface NotFoundScreenProps {
   navigation?: RootStackNavigationProp;
@@ -66,29 +58,22 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
     if (onGoHome) {
       onGoHome();
     } else if (navigation) {
-      navigation.navigate('MainApp');
+      navigation.navigate("MainApp");
     }
   };
-
-  const canUseLottie = Platform.OS !== 'web' && LottieView;
 
   return (
     <View style={styles.container}>
       {/* Animated Illustration */}
       <View style={styles.animationContainer}>
-        {canUseLottie ? (
-          <LottieView
-            ref={animationRef}
-            source={{ uri: ERROR_404_ANIMATION_URL }}
-            autoPlay={true}
-            loop={true}
-            speed={3}
-            renderMode="AUTOMATIC"
-            style={styles.animation}
-          />
-        ) : (
-          <Text style={styles.fallbackEmoji}>🔍</Text>
-        )}
+        <LottieView
+          ref={animationRef}
+          source={ERROR_404_ANIMATION}
+          autoPlay={true}
+          loop={true}
+          speed={3}
+          style={styles.animation}
+        />
       </View>
 
       {/* Content */}
@@ -105,7 +90,10 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
         </TouchableOpacity>
 
         {(navigation?.canGoBack() || onGoBack) && (
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleGoBack}>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleGoBack}
+          >
             <Text style={styles.secondaryButtonText}>← Go Back</Text>
           </TouchableOpacity>
         )}
@@ -123,8 +111,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   animationContainer: {
@@ -135,43 +123,43 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   animation: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   fallbackEmoji: {
     fontSize: 100,
-    textAlign: 'center',
+    textAlign: "center",
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 20,
     marginBottom: 30,
   },
   errorCode: {
     fontSize: 72,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     opacity: 0.2,
-    position: 'absolute',
+    position: "absolute",
     top: -40,
     letterSpacing: 10,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 12,
   },
   message: {
     fontSize: 16,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
     maxWidth: 300,
   },
   actions: {
-    width: '100%',
+    width: "100%",
     maxWidth: 300,
     gap: 12,
   },
@@ -180,7 +168,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     ...Platform.select({
       ios: {
         shadowColor: COLORS.primary,
@@ -196,24 +184,24 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: COLORS.white,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   secondaryButton: {
     backgroundColor: COLORS.white,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 2,
     borderColor: COLORS.border,
   },
   secondaryButtonText: {
     color: COLORS.text,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   decoration: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
     opacity: 0.1,
   },
