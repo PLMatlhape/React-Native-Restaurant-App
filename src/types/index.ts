@@ -1,7 +1,7 @@
 // Navigation Types
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 // Root Stack Navigator
 export type RootStackParamList = {
@@ -69,13 +69,16 @@ export type AdminStackParamList = {
 };
 
 // Navigation Props
-export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+export type RootStackNavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 export type MainTabNavigationProp = BottomTabNavigationProp<MainTabParamList>;
-export type FoodStackNavigationProp = NativeStackNavigationProp<FoodStackParamList>;
-export type AdminStackNavigationProp = NativeStackNavigationProp<AdminStackParamList>;
+export type FoodStackNavigationProp =
+  NativeStackNavigationProp<FoodStackParamList>;
+export type AdminStackNavigationProp =
+  NativeStackNavigationProp<AdminStackParamList>;
 
 // Route Props
-export type FoodDetailRouteProp = RouteProp<FoodStackParamList, 'FoodDetail'>;
+export type FoodDetailRouteProp = RouteProp<FoodStackParamList, "FoodDetail">;
 
 // User Types
 export interface User {
@@ -86,11 +89,17 @@ export interface User {
   surname?: string;
   contactNumber?: string;
   address?: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   cardNumber?: string;
   cardHolder?: string;
   expiryDate?: string;
   cvv?: string;
+  cardDetails?: {
+    cardNumber?: string;
+    cardHolder?: string;
+    expiryDate?: string;
+    cvv?: string;
+  };
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }
@@ -98,6 +107,7 @@ export interface User {
 export interface UserProfile {
   name: string;
   surname: string;
+  email?: string;
   contactNumber: string;
   address: string;
   cardNumber?: string;
@@ -151,7 +161,13 @@ export interface Cart {
 }
 
 // Order Types
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "delivered"
+  | "cancelled";
 
 export interface OrderItem {
   foodId: string;
@@ -168,7 +184,7 @@ export interface Order {
   totalAmount: number;
   status: OrderStatus;
   paymentMethod: string;
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
   deliveryAddress?: string;
   notes?: string;
   createdAt: Date;
@@ -262,7 +278,7 @@ export interface LoadingProps {
   visible?: boolean;
   message?: string;
   fullScreen?: boolean;
-  size?: 'small' | 'large';
+  size?: "small" | "large";
   color?: string;
   overlay?: boolean;
   useLottie?: boolean;
@@ -272,8 +288,8 @@ export interface LoadingProps {
 export interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'text';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "outline" | "text";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
   icon?: string;
@@ -294,8 +310,8 @@ export interface InputProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
   error?: string;
   style?: object;
   multiline?: boolean;

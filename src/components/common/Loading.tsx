@@ -1,35 +1,20 @@
-import React, { useEffect, useRef } from 'react';
-import {
-    ActivityIndicator,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    View
-} from 'react-native';
-import { LoadingProps } from '../../types';
-import { COLORS } from '../../utils/constants';
+import LottieView from "lottie-react-native";
+import React, { useEffect, useRef } from "react";
+import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
+import { LoadingProps } from "../../types";
+import { COLORS } from "../../utils/constants";
 
-// Conditionally import LottieView - it may fail on web
-let LottieView: any = null;
-
-try {
-  LottieView = require('lottie-react-native').default;
-} catch (error) {
-  console.log('Lottie not available, using fallback');
-}
-
-// Lottie animation URL from lottie.host
-const COFFEE_ANIMATION_URL = 'https://lottie.host/40c22274-9e6d-479b-8461-78d7d7d8bc5c/mRuXq2MJu1.json';
+// Local Lottie animation asset
+const COFFEE_ANIMATION = require("../../../assets/icon/Coffee love.json");
 
 const Loading: React.FC<LoadingProps> = ({
   visible = true,
-  message = 'Loading...',
+  message = "Loading...",
   fullScreen = false,
-  size = 'large',
+  size = "large",
   color = COLORS.primary,
   overlay = false,
-  useLottie = Platform.OS !== 'web',
+  useLottie = true,
   lottieSize = 200,
 }) => {
   const animationRef = useRef<any>(null);
@@ -43,18 +28,17 @@ const Loading: React.FC<LoadingProps> = ({
 
   if (!visible) return null;
 
-  const canUseLottie = useLottie && LottieView;
+  const canUseLottie = useLottie;
 
   const renderLoadingIndicator = (): React.ReactElement => {
     if (canUseLottie) {
       return (
         <LottieView
           ref={animationRef}
-          source={{ uri: COFFEE_ANIMATION_URL }}
+          source={COFFEE_ANIMATION}
           autoPlay={true}
           loop={true}
           speed={3}
-          renderMode="AUTOMATIC"
           style={{ width: lottieSize, height: lottieSize }}
         />
       );
@@ -64,7 +48,9 @@ const Loading: React.FC<LoadingProps> = ({
 
   const LoadingContent = (
     <View style={[styles.container, fullScreen && styles.fullScreenContainer]}>
-      <View style={[styles.loadingBox, canUseLottie && styles.loadingBoxLottie]}>
+      <View
+        style={[styles.loadingBox, canUseLottie && styles.loadingBoxLottie]}
+      >
         {renderLoadingIndicator()}
         {message && <Text style={styles.message}>{message}</Text>}
       </View>
@@ -75,7 +61,9 @@ const Loading: React.FC<LoadingProps> = ({
     return (
       <Modal transparent visible={visible} animationType="fade">
         <View style={styles.overlay}>
-          <View style={[styles.loadingBox, canUseLottie && styles.loadingBoxLottie]}>
+          <View
+            style={[styles.loadingBox, canUseLottie && styles.loadingBoxLottie]}
+          >
             {renderLoadingIndicator()}
             {message && <Text style={styles.message}>{message}</Text>}
           </View>
@@ -89,39 +77,39 @@ const Loading: React.FC<LoadingProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: '#F5E6D3', // Coffee shop beige/brown background
+    backgroundColor: "#F5E6D3", // Coffee shop beige/brown background
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingBox: {
-    backgroundColor: 'transparent', // No white box
+    backgroundColor: "transparent", // No white box
     borderRadius: 16,
     padding: 30,
-    alignItems: 'center',
+    alignItems: "center",
     minWidth: 150,
     // Remove shadow since no box
   },
   loadingBoxLottie: {
     paddingTop: 10,
     paddingBottom: 20,
-    backgroundColor: 'transparent', // Ensure transparent
+    backgroundColor: "transparent", // Ensure transparent
   },
   message: {
     marginTop: 10,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#4A3428', // Dark coffee brown text
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#4A3428", // Dark coffee brown text
+    textAlign: "center",
   },
 });
 
