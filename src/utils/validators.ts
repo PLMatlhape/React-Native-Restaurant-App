@@ -33,7 +33,7 @@ export const validators = {
   // Phone number validation (South African format)
   isValidPhone: (phone: string): boolean => {
     // Remove spaces and dashes
-    const cleanPhone = phone.replace(/[\s-]/g, '');
+    const cleanPhone = phone.replace(/[\s-]/g, "");
     // Check for SA format: 10 digits starting with 0, or with +27
     const phoneRegex = /^(?:\+27|0)[0-9]{9}$/;
     return phoneRegex.test(cleanPhone);
@@ -41,30 +41,41 @@ export const validators = {
 
   // Password validation
   isValidPassword: (password: string): boolean => {
-    return password && password.length >= 6;
+    return !!password && password.length >= 6;
   },
 
   // Strong password validation
-  isStrongPassword: (password: string): { isValid: boolean; message: string } => {
+  isStrongPassword: (
+    password: string,
+  ): { isValid: boolean; message: string } => {
     if (!password || password.length < 8) {
-      return { isValid: false, message: 'Password must be at least 8 characters' };
+      return {
+        isValid: false,
+        message: "Password must be at least 8 characters",
+      };
     }
     if (!/[A-Z]/.test(password)) {
-      return { isValid: false, message: 'Password must contain an uppercase letter' };
+      return {
+        isValid: false,
+        message: "Password must contain an uppercase letter",
+      };
     }
     if (!/[a-z]/.test(password)) {
-      return { isValid: false, message: 'Password must contain a lowercase letter' };
+      return {
+        isValid: false,
+        message: "Password must contain a lowercase letter",
+      };
     }
     if (!/[0-9]/.test(password)) {
-      return { isValid: false, message: 'Password must contain a number' };
+      return { isValid: false, message: "Password must contain a number" };
     }
-    return { isValid: true, message: '' };
+    return { isValid: true, message: "" };
   },
 
   // Card number validation (Luhn algorithm)
   isValidCardNumber: (cardNumber: string): boolean => {
-    const cleanNumber = cardNumber.replace(/\s/g, '');
-    
+    const cleanNumber = cardNumber.replace(/\s/g, "");
+
     if (!/^\d{13,19}$/.test(cleanNumber)) {
       return false;
     }
@@ -100,10 +111,10 @@ export const validators = {
       return false;
     }
 
-    const [monthStr, yearStr] = expiry.split('/');
+    const [monthStr, yearStr] = expiry.split("/");
     const month = parseInt(monthStr, 10);
     const year = parseInt(yearStr, 10);
-    
+
     if (month < 1 || month > 12) {
       return false;
     }
@@ -130,7 +141,7 @@ export const validators = {
 
   // Address validation
   isValidAddress: (address: string): boolean => {
-    return address && address.trim().length >= 10;
+    return !!address && address.trim().length >= 10;
   },
 
   // Price validation
@@ -141,7 +152,11 @@ export const validators = {
 
   // Required field validation
   isRequired: (value: string | null | undefined): boolean => {
-    return value !== null && value !== undefined && value.toString().trim().length > 0;
+    return (
+      value !== null &&
+      value !== undefined &&
+      value.toString().trim().length > 0
+    );
   },
 
   // Quantity validation
@@ -161,8 +176,8 @@ export const validators = {
 
   // South African ID validation
   isValidSAID: (idNumber: string): boolean => {
-    const cleanId = idNumber.replace(/\s/g, '');
-    
+    const cleanId = idNumber.replace(/\s/g, "");
+
     if (!/^\d{13}$/.test(cleanId)) {
       return false;
     }
@@ -173,7 +188,7 @@ export const validators = {
 
     for (let i = 0; i < 13; i++) {
       const digit = parseInt(cleanId[i], 10);
-      
+
       if (i % 2 === 0) {
         total += digit;
       } else {
@@ -182,14 +197,17 @@ export const validators = {
     }
 
     count *= 2;
-    
+
     let countTotal = 0;
-    count.toString().split('').forEach(d => {
-      countTotal += parseInt(d, 10);
-    });
+    count
+      .toString()
+      .split("")
+      .forEach((d) => {
+        countTotal += parseInt(d, 10);
+      });
 
     total += countTotal;
-    
+
     return total % 10 === 0;
   },
 
@@ -198,32 +216,32 @@ export const validators = {
     const errors: string[] = [];
 
     if (!validators.isValidName(data.name)) {
-      errors.push('Please enter a valid first name');
+      errors.push("Please enter a valid first name");
     }
 
     if (!validators.isValidName(data.surname)) {
-      errors.push('Please enter a valid surname');
+      errors.push("Please enter a valid surname");
     }
 
     if (!validators.isValidEmail(data.email)) {
-      errors.push('Please enter a valid email address');
+      errors.push("Please enter a valid email address");
     }
 
     if (!validators.isValidPhone(data.contactNumber)) {
-      errors.push('Please enter a valid phone number');
+      errors.push("Please enter a valid phone number");
     }
 
     if (!validators.isValidPassword(data.password)) {
-      errors.push('Password must be at least 6 characters');
+      errors.push("Password must be at least 6 characters");
     }
 
     if (data.password !== data.confirmPassword) {
-      errors.push('Passwords do not match');
+      errors.push("Passwords do not match");
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   },
 
@@ -232,26 +250,26 @@ export const validators = {
     const errors: string[] = [];
 
     if (!validators.isValidCardNumber(data.cardNumber)) {
-      errors.push('Please enter a valid card number');
+      errors.push("Please enter a valid card number");
     }
 
     if (!validators.isValidExpiryDate(data.expiryDate)) {
-      errors.push('Please enter a valid expiry date (MM/YY)');
+      errors.push("Please enter a valid expiry date (MM/YY)");
     }
 
     if (!validators.isValidCVV(data.cvv)) {
-      errors.push('Please enter a valid CVV');
+      errors.push("Please enter a valid CVV");
     }
 
     if (!validators.isRequired(data.cardHolder)) {
-      errors.push('Please enter the cardholder name');
+      errors.push("Please enter the cardholder name");
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
-  }
+  },
 };
 
 export default validators;

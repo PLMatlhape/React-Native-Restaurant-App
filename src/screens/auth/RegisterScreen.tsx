@@ -1,290 +1,226 @@
-import React, { useState } from 'react';
+// Register Screen - simple local registration
+import React, { useState } from "react";
 import {
     Alert,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { FormErrors, RootStackNavigationProp } from '../../types';
-import { COLORS, VALIDATION_MESSAGES } from '../../utils/constants';
+} from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import { COLORS } from "../../utils/constants";
 
 interface RegisterScreenProps {
-  navigation: RootStackNavigationProp;
-}
-
-interface FormData {
-  name: string;
-  surname: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  contactNumber: string;
-  address: string;
-  cardNumber: string;
-  cardHolder: string;
-  expiryDate: string;
-  cvv: string;
+  navigation: any;
 }
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const { register } = useAuth();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    surname: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    contactNumber: '',
-    address: '',
-    cardNumber: '',
-    cardHolder: '',
-    expiryDate: '',
-    cvv: '',
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.name.trim()) newErrors.name = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.surname.trim()) newErrors.surname = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.email.trim()) {
-      newErrors.email = VALIDATION_MESSAGES.REQUIRED;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = VALIDATION_MESSAGES.INVALID_EMAIL;
+  const handleRegister = async () => {
+    // Validation
+    if (!name.trim() || !surname.trim() || !email.trim() || !password.trim()) {
+      Alert.alert("Error", "Please fill in all required fields");
+      return;
     }
-    if (!formData.password) {
-      newErrors.password = VALIDATION_MESSAGES.REQUIRED;
-    } else if (formData.password.length < 6) {
-      newErrors.password = VALIDATION_MESSAGES.PASSWORD_MIN_LENGTH;
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters");
+      return;
     }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = VALIDATION_MESSAGES.PASSWORD_MISMATCH;
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
     }
-    if (!formData.contactNumber.trim()) {
-      newErrors.contactNumber = VALIDATION_MESSAGES.REQUIRED;
-    }
-    if (!formData.address.trim()) newErrors.address = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.cardNumber.trim()) newErrors.cardNumber = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.cardHolder.trim()) newErrors.cardHolder = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.expiryDate.trim()) newErrors.expiryDate = VALIDATION_MESSAGES.REQUIRED;
-    if (!formData.cvv.trim()) newErrors.cvv = VALIDATION_MESSAGES.REQUIRED;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleRegister = async (): Promise<void> => {
-    if (!validateForm()) {
-      Alert.alert('Validation Error', 'Please fill in all required fields correctly.');
+    if (!email.includes("@") || !email.includes(".")) {
+      Alert.alert("Error", "Please enter a valid email address");
       return;
     }
 
     setLoading(true);
-    const result = await register(formData.email, formData.password, {
-      name: formData.name,
-      surname: formData.surname,
-      contactNumber: formData.contactNumber,
-      address: formData.address,
-      cardNumber: formData.cardNumber,
-      cardHolder: formData.cardHolder,
-      expiryDate: formData.expiryDate,
-      cvv: formData.cvv,
+    const result = await register(email.trim(), password, {
+      name: name.trim(),
+      surname: surname.trim(),
+      contactNumber: phone.trim(),
+      address: address.trim(),
     });
-
     setLoading(false);
 
-    if (result.success) {
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('MainApp') },
-      ]);
-    } else {
-      Alert.alert('Registration Failed', result.error || 'An error occurred');
+    if (!result.success) {
+      Alert.alert("Registration Failed", result.error || "Please try again");
     }
-  };
-
-  const updateField = (field: keyof FormData, value: string): void => {
-    setFormData({ ...formData, [field]: value });
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: undefined });
-    }
+    // If success, AuthContext auto-navigates to main app
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        keyboardShouldPersistTaps="handled"
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
-        </View>
-
-        <View style={styles.form}>
-          {/* Personal Information */}
-          <Text style={styles.sectionTitle}>Personal Information</Text>
-
-          <TextInput
-            style={[styles.input, errors.name && styles.inputError]}
-            placeholder="Name"
-            value={formData.name}
-            onChangeText={(text) => updateField('name', text)}
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-
-          <TextInput
-            style={[styles.input, errors.surname && styles.inputError]}
-            placeholder="Surname"
-            value={formData.surname}
-            onChangeText={(text) => updateField('surname', text)}
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.surname && <Text style={styles.errorText}>{errors.surname}</Text>}
-
-          <TextInput
-            style={[styles.input, errors.email && styles.inputError]}
-            placeholder="Email"
-            value={formData.email}
-            onChangeText={(text) => updateField('email', text)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-          <TextInput
-            style={[styles.input, errors.password && styles.inputError]}
-            placeholder="Password"
-            value={formData.password}
-            onChangeText={(text) => updateField('password', text)}
-            secureTextEntry
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-
-          <TextInput
-            style={[styles.input, errors.confirmPassword && styles.inputError]}
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChangeText={(text) => updateField('confirmPassword', text)}
-            secureTextEntry
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.confirmPassword && (
-            <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-          )}
-
-          {/* Contact Information */}
-          <Text style={styles.sectionTitle}>Contact Information</Text>
-
-          <TextInput
-            style={[styles.input, errors.contactNumber && styles.inputError]}
-            placeholder="Contact Number"
-            value={formData.contactNumber}
-            onChangeText={(text) => updateField('contactNumber', text)}
-            keyboardType="phone-pad"
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.contactNumber && (
-            <Text style={styles.errorText}>{errors.contactNumber}</Text>
-          )}
-
-          <TextInput
-            style={[styles.input, styles.textArea, errors.address && styles.inputError]}
-            placeholder="Address"
-            value={formData.address}
-            onChangeText={(text) => updateField('address', text)}
-            multiline
-            numberOfLines={3}
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
-
-          {/* Card Information */}
-          <Text style={styles.sectionTitle}>Payment Information</Text>
-          <Text style={styles.note}>For testing purposes only</Text>
-
-          <TextInput
-            style={[styles.input, errors.cardNumber && styles.inputError]}
-            placeholder="Card Number"
-            value={formData.cardNumber}
-            onChangeText={(text) => updateField('cardNumber', text)}
-            keyboardType="numeric"
-            maxLength={16}
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.cardNumber && <Text style={styles.errorText}>{errors.cardNumber}</Text>}
-
-          <TextInput
-            style={[styles.input, errors.cardHolder && styles.inputError]}
-            placeholder="Card Holder Name"
-            value={formData.cardHolder}
-            onChangeText={(text) => updateField('cardHolder', text)}
-            placeholderTextColor={COLORS.textLight}
-          />
-          {errors.cardHolder && <Text style={styles.errorText}>{errors.cardHolder}</Text>}
-
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <TextInput
-                style={[styles.input, errors.expiryDate && styles.inputError]}
-                placeholder="MM/YY"
-                value={formData.expiryDate}
-                onChangeText={(text) => updateField('expiryDate', text)}
-                maxLength={5}
-                placeholderTextColor={COLORS.textLight}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <Image
+                source={require("../../../assets/icon/icons8-back-button.png")}
+                style={{ width: 24, height: 24, tintColor: COLORS.primary }}
               />
-              {errors.expiryDate && (
-                <Text style={styles.errorText}>{errors.expiryDate}</Text>
-              )}
-            </View>
-            <View style={styles.halfWidth}>
-              <TextInput
-                style={[styles.input, errors.cvv && styles.inputError]}
-                placeholder="CVV"
-                value={formData.cvv}
-                onChangeText={(text) => updateField('cvv', text)}
-                keyboardType="numeric"
-                maxLength={3}
-                secureTextEntry
-                placeholderTextColor={COLORS.textLight}
-              />
-              {errors.cvv && <Text style={styles.errorText}>{errors.cvv}</Text>}
-            </View>
+            </TouchableOpacity>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>
+              Join Coffee Shop and start ordering
+            </Text>
           </View>
 
-          {/* Submit Button */}
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </Text>
-          </TouchableOpacity>
+          {/* Form */}
+          <View style={styles.form}>
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                <Text style={styles.label}>First Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="John"
+                  placeholderTextColor={COLORS.textLight}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
+              <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                <Text style={styles.label}>Last Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Doe"
+                  placeholderTextColor={COLORS.textLight}
+                  value={surname}
+                  onChangeText={setSurname}
+                  autoCapitalize="words"
+                />
+              </View>
+            </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>
-              Already have an account? <Text style={styles.linkBold}>Login</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="your@email.com"
+                placeholderTextColor={COLORS.textLight}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0123456789"
+                placeholderTextColor={COLORS.textLight}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Delivery Address</Text>
+              <TextInput
+                style={[styles.input, styles.multilineInput]}
+                placeholder="Your delivery address"
+                placeholderTextColor={COLORS.textLight}
+                value={address}
+                onChangeText={setAddress}
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password *</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.input, styles.passwordInput]}
+                  placeholder="Min 6 characters"
+                  placeholderTextColor={COLORS.textLight}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Image
+                    source={
+                      showPassword
+                        ? require("../../../assets/icon/icons8-eye-48.png")
+                        : require("../../../assets/icon/icons8-invisible-48.png")
+                    }
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Confirm Password *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Re-enter password"
+                placeholderTextColor={COLORS.textLight}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.registerButton, loading && styles.disabledButton]}
+              onPress={handleRegister}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.registerButtonText}>
+                {loading ? "Creating Account..." : "Create Account"}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.linkText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -294,93 +230,112 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 120, // Extra padding for submit button visibility
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 30,
   },
   header: {
-    marginTop: 20,
-    marginBottom: 30,
+    paddingTop: 60,
+    paddingBottom: 24,
+  },
+  backButton: {
+    marginBottom: 16,
+    padding: 4,
+    alignSelf: "flex-start",
+  },
+  backText: {
+    fontSize: 28,
+    color: COLORS.primary,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: COLORS.text,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textLight,
   },
   form: {
-    width: '100%',
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.primary,
-    marginTop: 20,
-    marginBottom: 12,
+  row: {
+    flexDirection: "row",
   },
-  note: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    fontStyle: 'italic',
-    marginBottom: 12,
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 8,
   },
   input: {
     backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
     color: COLORS.text,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  inputError: {
-    borderColor: COLORS.error,
+  multilineInput: {
+    minHeight: 60,
+    textAlignVertical: "top",
   },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
+  passwordContainer: {
+    position: "relative",
   },
-  errorText: {
-    color: COLORS.error,
-    fontSize: 12,
-    marginTop: -8,
-    marginBottom: 8,
+  passwordInput: {
+    paddingRight: 50,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  eyeButton: {
+    position: "absolute",
+    right: 14,
+    top: 12,
+    padding: 4,
   },
-  halfWidth: {
-    width: '48%',
+  eyeIcon: {
+    width: 22,
+    height: 22,
+    tintColor: COLORS.textLight,
   },
-  button: {
+  registerButton: {
     backgroundColor: COLORS.primary,
     paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  buttonDisabled: {
+  disabledButton: {
     opacity: 0.6,
   },
-  buttonText: {
+  registerButtonText: {
     color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: COLORS.textLight,
   },
   linkText: {
-    textAlign: 'center',
-    color: COLORS.textLight,
     fontSize: 14,
-  },
-  linkBold: {
+    fontWeight: "700",
     color: COLORS.primary,
-    fontWeight: '600',
   },
 });
 

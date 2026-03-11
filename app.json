@@ -32,7 +32,32 @@
             "backgroundColor": "#3E2723"
           }
         }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.matlhape.coffeeshop",
+          "enableGooglePay": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon/icons8-coffee-cup-64.png",
+          "color": "#6F4E37"
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "069b8468-213f-4190-b384-6e4aecb92c75"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/069b8468-213f-4190-b384-6e4aecb92c75"
+    }
   }
 }

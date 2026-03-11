@@ -82,7 +82,7 @@ export const imageMap: ImageMap = {
 
 // Category default images
 export const categoryImages: ImageMap = {
-  Cake: require("../../assets/Cake/cake-3493.jpeg"),
+  Cakes: require("../../assets/Cake/cake-3493.jpeg"),
   Coffee: require("../../assets/Coffee/coffee-4155.jpeg"),
   Croissants: require("../../assets/croissants/croissants-1175.jpeg"),
   Donuts: require("../../assets/Donuts/Chocolate Doughnuts.jpeg"),
@@ -92,7 +92,7 @@ export const categoryImages: ImageMap = {
   Churros: require("../../assets/Churros/churros-281.jpeg"),
   Crepes: require("../../assets/Crepes/Nutella Crepe Rolls.jpg"),
   Oreos: require("../../assets/Oreos/download (11).jpg"),
-  Roller: require("../../assets/Roller/roller-2281.jpg"),
+  "Cake Rolls": require("../../assets/Roller/roller-2281.jpg"),
 };
 
 // Get image for a food item by name, with category fallback

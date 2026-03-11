@@ -1,20 +1,31 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { CartItem as CartItemType } from '../types';
+// Cart context - manages shopping cart with AsyncStorage persistence
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 
-interface CartItem extends CartItemType {
+export interface CartItem {
+  id: string;
   cartItemId: string;
-  totalPrice: number;
+  foodId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: any;
   customizations?: any;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   loading: boolean;
-  addToCart: (item: Omit<CartItem, 'cartItemId'>) => void;
+  addToCart: (item: Omit<CartItem, "cartItemId">) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
-  updateItemCustomizations: (cartItemId: string, customizations: any, price: number) => void;
+  updateCartItem: (cartItemId: string, updates: Partial<CartItem>) => void;
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
@@ -28,121 +39,112 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
-  // Load cart from storage on mount
   useEffect(() => {
     loadCart();
   }, []);
 
-  // Save cart to storage whenever it changes
   useEffect(() => {
-    if (!loading) {
-      saveCart();
-    }
+    if (!loading) saveCart();
   }, [cartItems, loading]);
 
-  const loadCart = async (): Promise<void> => {
+  const loadCart = async () => {
     try {
-      const cartData = await AsyncStorage.getItem('cart');
-      if (cartData) {
-        setCartItems(JSON.parse(cartData));
-      }
+      const data = await AsyncStorage.getItem("coffee_shop_cart");
+      if (data) setCartItems(JSON.parse(data));
     } catch (error) {
-      console.error('Error loading cart:', error);
+      console.error("Error loading cart:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveCart = async (): Promise<void> => {
+  const saveCart = async () => {
     try {
-      await AsyncStorage.setItem('cart', JSON.stringify(cartItems));
+      await AsyncStorage.setItem("coffee_shop_cart", JSON.stringify(cartItems));
     } catch (error) {
-      console.error('Error saving cart:', error);
+      console.error("Error saving cart:", error);
     }
   };
 
-  const addToCart = (item: Omit<CartItem, 'cartItemId'>): void => {
-    const existingItemIndex = cartItems.findIndex(
-      (cartItem) =>
-        cartItem.id === item.id &&
-        JSON.stringify(cartItem.customizations) === JSON.stringify(item.customizations)
+  const addToCart = (item: Omit<CartItem, "cartItemId">) => {
+    const existingIndex = cartItems.findIndex(
+      (ci) =>
+        ci.foodId === item.foodId &&
+        JSON.stringify(ci.customizations) ===
+          JSON.stringify(item.customizations),
     );
 
-    if (existingItemIndex > -1) {
-      // Item exists, update quantity
-      const updatedCart = [...cartItems];
-      updatedCart[existingItemIndex].quantity += item.quantity;
-      setCartItems(updatedCart);
+    if (existingIndex > -1) {
+      const updated = [...cartItems];
+      updated[existingIndex].quantity += item.quantity;
+      setCartItems(updated);
     } else {
-      // New item, add to cart
-      setCartItems([...cartItems, { ...item, cartItemId: Date.now().toString() } as CartItem]);
+      setCartItems([
+        ...cartItems,
+        { ...item, cartItemId: `cart_${Date.now()}` },
+      ]);
     }
   };
 
-  const removeFromCart = (cartItemId: string): void => {
+  const removeFromCart = (cartItemId: string) => {
     setCartItems(cartItems.filter((item) => item.cartItemId !== cartItemId));
   };
 
-  const updateQuantity = (cartItemId: string, quantity: number): void => {
+  const updateQuantity = (cartItemId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(cartItemId);
       return;
     }
-
-    const updatedCart = cartItems.map((item) =>
-      item.cartItemId === cartItemId ? { ...item, quantity } : item
+    setCartItems(
+      cartItems.map((item) =>
+        item.cartItemId === cartItemId ? { ...item, quantity } : item,
+      ),
     );
-    setCartItems(updatedCart);
   };
 
-  const updateItemCustomizations = (
-    cartItemId: string,
-    customizations: any,
-    price: number
-  ): void => {
-    const updatedCart = cartItems.map((item) =>
-      item.cartItemId === cartItemId
-        ? { ...item, customizations, totalPrice: price }
-        : item
+  const updateCartItem = (cartItemId: string, updates: Partial<CartItem>) => {
+    setCartItems(
+      cartItems.map((item) =>
+        item.cartItemId === cartItemId ? { ...item, ...updates } : item,
+      ),
     );
-    setCartItems(updatedCart);
   };
 
-  const clearCart = (): void => {
-    setCartItems([]);
-  };
+  const clearCart = () => setCartItems([]);
 
-  const getCartTotal = (): number => {
-    return cartItems.reduce((total, item) => {
-      return total + item.totalPrice * item.quantity;
-    }, 0);
-  };
+  const getCartTotal = () =>
+    cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const getCartCount = (): number => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
-  };
+  const getCartCount = () =>
+    cartItems.reduce((count, item) => count + item.quantity, 0);
 
-  const value: CartContextType = {
-    cartItems,
-    loading,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    updateItemCustomizations,
-    clearCart,
-    getCartTotal,
-    getCartCount,
-  };
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        loading,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        updateCartItem,
+        clearCart,
+        getCartTotal,
+        getCartCount,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };
 
 export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };
+
+export default CartContext;

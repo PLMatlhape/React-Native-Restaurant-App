@@ -1,7 +1,18 @@
 // Navigation Types
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+// RouteProp - defined locally because @react-navigation v7 types
+// may not export it from core depending on the install.
+type RouteProp<
+  ParamList extends Record<string, object | undefined>,
+  RouteName extends keyof ParamList = keyof ParamList,
+> = {
+  key: string;
+  name: RouteName;
+  params: ParamList[RouteName];
+  path?: string;
+};
 
 // Root Stack Navigator
 export type RootStackParamList = {
@@ -114,6 +125,12 @@ export interface UserProfile {
   cardHolder?: string;
   expiryDate?: string;
   cvv?: string;
+  cardDetails?: {
+    cardNumber?: string;
+    cardHolder?: string;
+    expiryDate?: string;
+    cvv?: string;
+  };
 }
 
 // Food Types

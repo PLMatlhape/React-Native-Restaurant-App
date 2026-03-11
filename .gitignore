@@ -40,6 +40,11 @@ yarn-error.*
 # Keep .env.example for reference
 !.env.example
 
+# Backend
+backend/.env
+backend/node_modules/
+backend/transactions.json
+
 # typescript
 *.tsbuildinfo
 

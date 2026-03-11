@@ -1,185 +1,225 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
-import { Text } from 'react-native';
-import { useAuth } from '../context/AuthContext';
-import type { MainTabParamList, RootStackParamList } from '../types';
-import { COLORS, SCREEN_NAMES } from '../utils/constants';
+// Simplified App Navigator - No Firebase, No Admin
+// Auth flow → Main tabs (Home, Cart, Orders, Profile)
+
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import React, { useEffect, useState } from "react";
+import {
+    Image,
+    ImageSourcePropType,
+    Platform,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
+import { COLORS } from "../utils/constants";
 
 // Auth Screens
-import LoginScreen from '../screens/auth/LoginScreen';
-import ProfileScreen from '../screens/auth/ProfileScreen';
-import RegisterScreen from '../screens/auth/RegisterScreen';
-import WelcomeScreen from '../screens/auth/WelcomeScreen';
+import LoginScreen from "../screens/auth/LoginScreen";
+import RegisterScreen from "../screens/auth/RegisterScreen";
+import WelcomeScreen from "../screens/auth/WelcomeScreen";
 
-// Food Screens
-import FoodDetailScreen from '../screens/food/FoodDetailScreen';
-import HomeScreen from '../screens/food/HomeScreen';
-
-// Cart Screens
-import CartScreen from '../screens/cart/CartScreen';
-import CheckoutScreen from '../screens/cart/CheckoutScreen';
-
-// Order Screens
-import OrderHistoryScreen from '../screens/order/OrderHistoryScreen';
+// Main Screens
+import ProfileScreen from "../screens/auth/ProfileScreen";
+import CartScreen from "../screens/cart/CartScreen";
+import CheckoutScreen from "../screens/cart/CheckoutScreen";
+import PaymentGatewayScreen from "../screens/cart/PaymentGatewayScreen";
+import FoodDetailScreen from "../screens/food/FoodDetailScreen";
+import HomeScreen from "../screens/food/HomeScreen";
+import MenuScreen from "../screens/food/MenuScreen";
+import OrderHistoryScreen from "../screens/order/OrderHistoryScreen";
 
 // Admin Screens
-import AdminDashboard from '../screens/admin/AdminDashboard';
-import ManageFoodScreen from '../screens/admin/ManageFoodScreen';
-import OrderManagementScreen from '../screens/admin/OrderManagementScreen';
+import AdminAnalyticsScreen from "../screens/admin/AdminAnalyticsScreen";
+import AdminMenuScreen from "../screens/admin/AdminMenuScreen";
+import AdminOrdersScreen from "../screens/admin/AdminOrdersScreen";
 
-// Common Screens
-import NotFoundScreen from '../screens/common/NotFoundScreen';
+// Tab Icons
+const TAB_ICONS = {
+  home: require("../../assets/icon/icons8-coffee-cup-64.png"),
+  cart: require("../../assets/icon/icons8-card-64.png"),
+  orders: require("../../assets/icon/icons8-list-50 (1).png"),
+  profile: require("../../assets/icon/icons8-user-50.png"),
+  adminOrders: require("../../assets/icon/icons8-list-50 (1).png"),
+  adminMenu: require("../../assets/icon/icons8-restaurant-menu-64.png"),
+  analytics: require("../../assets/icon/icons8-done-50.png"),
+};
 
-// Common Components
-import Loading from '../components/common/Loading';
+// Components
+import Loading from "../components/common/Loading";
 
-const Stack = createStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
-// Auth Stack
+// ============================================
+// STACK NAVIGATORS
+// ============================================
+
 const AuthStack: React.FC = () => (
-  <Stack.Navigator
-    screenOptions={{
-      headerShown: false,
-      cardStyle: { backgroundColor: COLORS.background }
-    }}
-  >
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Welcome" component={WelcomeScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
   </Stack.Navigator>
 );
 
-// Home Stack
 const HomeStack: React.FC = () => (
   <Stack.Navigator
     screenOptions={{
       headerStyle: {
         backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
       },
       headerTintColor: COLORS.white,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
     }}
   >
-    <Stack.Screen 
-      name={SCREEN_NAMES.HOME as any} 
+    <Stack.Screen
+      name="Home"
       component={HomeScreen}
       options={{ headerShown: false }}
     />
-    <Stack.Screen 
-      name={SCREEN_NAMES.FOOD_DETAIL as any} 
+    <Stack.Screen
+      name="Menu"
+      component={MenuScreen}
+      options={{ title: "Menu" }}
+    />
+    <Stack.Screen
+      name="FoodDetail"
       component={FoodDetailScreen}
-      options={{ title: 'Food Details' }}
+      options={{ title: "Details" }}
     />
   </Stack.Navigator>
 );
 
-// Cart Stack
 const CartStack: React.FC = () => (
   <Stack.Navigator
     screenOptions={{
       headerStyle: {
         backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
       },
       headerTintColor: COLORS.white,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
     }}
   >
-    <Stack.Screen 
-      name={SCREEN_NAMES.CART as any} 
+    <Stack.Screen
+      name="Cart"
       component={CartScreen}
-      options={{ title: 'My Cart' }}
+      options={{ title: "My Cart" }}
     />
-    <Stack.Screen 
-      name={SCREEN_NAMES.CHECKOUT as any} 
+    <Stack.Screen
+      name="Checkout"
       component={CheckoutScreen}
-      options={{ title: 'Checkout' }}
+      options={{ title: "Checkout" }}
+    />
+    <Stack.Screen
+      name="PaymentGateway"
+      component={PaymentGatewayScreen}
+      options={{
+        title: "Payment",
+        headerLeft: () => null,
+        gestureEnabled: false,
+      }}
     />
   </Stack.Navigator>
 );
 
-// Orders Stack
 const OrdersStack: React.FC = () => (
   <Stack.Navigator
     screenOptions={{
       headerStyle: {
         backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
       },
       headerTintColor: COLORS.white,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
     }}
   >
-    <Stack.Screen 
-      name={SCREEN_NAMES.ORDER_HISTORY as any} 
+    <Stack.Screen
+      name="OrderHistory"
       component={OrderHistoryScreen}
-      options={{ title: 'My Orders' }}
+      options={{ title: "My Orders" }}
     />
   </Stack.Navigator>
 );
 
-// Profile Stack
 const ProfileStack: React.FC = () => (
   <Stack.Navigator
     screenOptions={{
       headerStyle: {
         backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
       },
       headerTintColor: COLORS.white,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
     }}
   >
-    <Stack.Screen 
-      name={SCREEN_NAMES.PROFILE as any} 
+    <Stack.Screen
+      name="Profile"
       component={ProfileScreen}
-      options={{ title: 'Profile' }}
+      options={{ title: "My Profile" }}
     />
   </Stack.Navigator>
 );
 
-// Admin Stack
-const AdminStack: React.FC = () => (
-  <Stack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.primary,
-      },
-      headerTintColor: COLORS.white,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <Stack.Screen 
-      name={SCREEN_NAMES.ADMIN_DASHBOARD as any} 
-      component={AdminDashboard}
-      options={{ title: 'Admin Dashboard' }}
-    />
-    <Stack.Screen 
-      name={SCREEN_NAMES.MANAGE_FOOD as any} 
-      component={ManageFoodScreen}
-      options={{ title: 'Manage Menu' }}
-    />
-    <Stack.Screen 
-      name={SCREEN_NAMES.ORDER_MANAGEMENT as any} 
-      component={OrderManagementScreen}
-      options={{ title: 'Order Management' }}
-    />
-  </Stack.Navigator>
+// ============================================
+// TAB BAR ICON WITH BADGE
+// ============================================
+
+interface TabIconProps {
+  icon?: string;
+  source?: ImageSourcePropType;
+  focused: boolean;
+  badge?: number;
+  tintColor?: string;
+}
+
+const TabIcon: React.FC<TabIconProps> = ({
+  icon,
+  source,
+  focused,
+  badge,
+  tintColor,
+}) => (
+  <View style={styles.iconContainer}>
+    {source ? (
+      <Image
+        source={source}
+        style={[
+          styles.tabIconImage,
+          {
+            opacity: focused ? 1 : 0.45,
+            tintColor:
+              tintColor || (focused ? COLORS.primary : COLORS.textLight),
+          },
+        ]}
+      />
+    ) : (
+      <Text style={[styles.icon, { opacity: focused ? 1 : 0.5 }]}>{icon}</Text>
+    )}
+    {badge !== undefined && badge > 0 && (
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>{badge > 99 ? "99+" : badge}</Text>
+      </View>
+    )}
+  </View>
 );
 
-// Main Tab Navigator
+// ============================================
+// MAIN TAB NAVIGATOR
+// ============================================
+
 const MainTabs: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
 
   return (
     <Tab.Navigator
@@ -190,107 +230,269 @@ const MainTabs: React.FC = () => {
         tabBarStyle: {
           backgroundColor: COLORS.white,
           borderTopColor: COLORS.border,
-          height: 60,
-          paddingBottom: 8,
+          borderTopWidth: 1,
+          height: Platform.OS === "ios" ? 88 : 65,
+          paddingBottom: Platform.OS === "ios" ? 28 : 10,
           paddingTop: 8,
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: "600",
+          marginTop: -2,
         },
       }}
     >
-      <Tab.Screen 
-        name="HomeTab" 
+      <Tab.Screen
+        name="HomeTab"
         component={HomeStack}
         options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>🏠</Text>
+          tabBarLabel: "Home",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon source={TAB_ICONS.home} focused={focused} />
           ),
         }}
       />
-      <Tab.Screen 
-        name="CartTab" 
+      <Tab.Screen
+        name="CartTab"
         component={CartStack}
         options={{
-          tabBarLabel: 'Cart',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>🛒</Text>
+          tabBarLabel: "Cart",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={TAB_ICONS.cart}
+              focused={focused}
+              badge={cartCount}
+            />
           ),
         }}
       />
-      {user && (
-        <Tab.Screen 
-          name="OrdersTab" 
-          component={OrdersStack}
-          options={{
-            tabBarLabel: 'Orders',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24, color }}>📦</Text>
-            ),
-          }}
-        />
-      )}
-      {user && (
-        <Tab.Screen 
-          name="ProfileTab" 
-          component={ProfileStack}
-          options={{
-            tabBarLabel: 'Profile',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24, color }}>👤</Text>
-            ),
-          }}
-        />
-      )}
-      {isAdmin && (
-        <Tab.Screen 
-          name="AdminTab" 
-          component={AdminStack}
-          options={{
-            tabBarLabel: 'Admin',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24, color }}>⚙️</Text>
-            ),
-          }}
-        />
-      )}
+      <Tab.Screen
+        name="OrdersTab"
+        component={OrdersStack}
+        options={{
+          tabBarLabel: "Orders",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon source={TAB_ICONS.orders} focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileStack}
+        options={{
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon source={TAB_ICONS.profile} focused={focused} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 };
 
-// Root Navigator
+// ============================================
+// ADMIN STACK + TABS
+// ============================================
+
+const AdminOrdersStack: React.FC = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
+      },
+      headerTintColor: COLORS.white,
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+    }}
+  >
+    <Stack.Screen
+      name="AdminOrders"
+      component={AdminOrdersScreen}
+      options={{ title: "Order Management" }}
+    />
+  </Stack.Navigator>
+);
+
+const AdminMenuStack: React.FC = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
+      },
+      headerTintColor: COLORS.white,
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+    }}
+  >
+    <Stack.Screen
+      name="AdminMenu"
+      component={AdminMenuScreen}
+      options={{ title: "Menu Management" }}
+    />
+  </Stack.Navigator>
+);
+
+const AdminAnalyticsStack: React.FC = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: COLORS.primary,
+        elevation: 0,
+        shadowOpacity: 0,
+      },
+      headerTintColor: COLORS.white,
+      headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+    }}
+  >
+    <Stack.Screen
+      name="AdminAnalytics"
+      component={AdminAnalyticsScreen}
+      options={{ title: "Analytics" }}
+    />
+  </Stack.Navigator>
+);
+
+const AdminTabs: React.FC = () => (
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: false,
+      tabBarActiveTintColor: COLORS.primary,
+      tabBarInactiveTintColor: COLORS.textLight,
+      tabBarStyle: {
+        backgroundColor: COLORS.white,
+        borderTopColor: COLORS.border,
+        borderTopWidth: 1,
+        height: Platform.OS === "ios" ? 88 : 65,
+        paddingBottom: Platform.OS === "ios" ? 28 : 10,
+        paddingTop: 8,
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      tabBarLabelStyle: {
+        fontSize: 11,
+        fontWeight: "600",
+        marginTop: -2,
+      },
+    }}
+  >
+    <Tab.Screen
+      name="AdminOrdersTab"
+      component={AdminOrdersStack}
+      options={{
+        tabBarLabel: "Orders",
+        tabBarIcon: ({ focused }) => (
+          <TabIcon source={TAB_ICONS.adminOrders} focused={focused} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="AdminMenuTab"
+      component={AdminMenuStack}
+      options={{
+        tabBarLabel: "Menu",
+        tabBarIcon: ({ focused }) => (
+          <TabIcon source={TAB_ICONS.adminMenu} focused={focused} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="AdminAnalyticsTab"
+      component={AdminAnalyticsStack}
+      options={{
+        tabBarLabel: "Analytics",
+        tabBarIcon: ({ focused }) => (
+          <TabIcon source={TAB_ICONS.analytics} focused={focused} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="AdminProfileTab"
+      component={ProfileStack}
+      options={{
+        tabBarLabel: "Profile",
+        tabBarIcon: ({ focused }) => (
+          <TabIcon source={TAB_ICONS.profile} focused={focused} />
+        ),
+      }}
+    />
+  </Tab.Navigator>
+);
+
+// ============================================
+// ROOT NAVIGATOR
+// ============================================
+
 const AppNavigator: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
 
-  // Show loading screen for at least 8 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 8000);
-
+    const timer = setTimeout(() => setShowSplash(false), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Show loading if either auth is loading OR splash timer is still active
   if (loading || showSplash) {
-    return <Loading fullScreen message="Starting Coffee Shop..." />;
+    return <Loading fullScreen message="Welcome to Coffee Shop..." />;
   }
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!user ? (
+        {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthStack} />
+        ) : isAdmin ? (
+          <Stack.Screen name="AdminApp" component={AdminTabs} />
         ) : (
           <Stack.Screen name="MainApp" component={MainTabs} />
         )}
-        <Stack.Screen name="NotFound" component={NotFoundScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 30,
+    height: 28,
+  },
+  icon: {
+    fontSize: 22,
+  },
+  tabIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -8,
+    backgroundColor: "#E53935",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#FFF",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+});
 
 export default AppNavigator;

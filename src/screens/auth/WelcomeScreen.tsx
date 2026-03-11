@@ -1,200 +1,198 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+// Welcome/Splash Screen - improved with Lottie animation
+import React, { useEffect, useRef } from "react";
 import {
-    Animated,
+    ActivityIndicator,
     Dimensions,
-    Platform,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { RootStackNavigationProp } from '../../types';
-import { SCREEN_NAMES } from '../../utils/constants';
+} from "react-native";
+import { COLORS } from "../../utils/constants";
 
-const CoffeeLoveAnimation = require('../../../assets/icon/Coffee love.json');
+// Safe Lottie import
+let LottieView: any = null;
+try {
+  LottieView = require("lottie-react-native").default;
+} catch (e) {
+  console.warn("LottieView not available in WelcomeScreen:", e);
+}
 
-const { height } = Dimensions.get('window');
+let CoffeeLoveAnimation: any = null;
+try {
+  CoffeeLoveAnimation = require("../../../assets/icon/Coffee love.json");
+} catch (e) {
+  console.warn("Lottie animation not found:", e);
+}
+
+const { width, height } = Dimensions.get("window");
 
 interface WelcomeScreenProps {
-  navigation: RootStackNavigationProp;
+  navigation: any;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
-  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
-  
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const logoScale = useRef(new Animated.Value(0.8)).current;
+  const animationRef = useRef<any>(null);
 
   useEffect(() => {
-    // Animate logo
-    Animated.spring(logoScale, {
-      toValue: 1,
-      friction: 4,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-
-    // Fade in buttons after a delay
-    Animated.sequence([
-      Animated.delay(500),
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  }, [fadeAnim, slideAnim, logoScale]);
+    try {
+      animationRef.current?.play();
+    } catch (e) {
+      console.warn("Lottie play failed:", e);
+    }
+  }, []);
 
   return (
-    <LinearGradient
-      colors={['#F5E6D3', '#E8D4C4', '#D4BBA8']}
-      style={styles.container}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
-      {/* Logo Section */}
-      <View style={styles.logoSection}>
-        <Animated.View style={[styles.logoContainer, { transform: [{ scale: logoScale }] }]}>
-          {isNative ? (
+      {/* Top Section */}
+      <View style={styles.topSection}>
+        <View style={styles.animationContainer}>
+          {LottieView && CoffeeLoveAnimation ? (
             <LottieView
+              ref={animationRef}
               source={CoffeeLoveAnimation}
               autoPlay
               loop
-              style={styles.lottieAnimation}
+              style={styles.animation}
             />
           ) : (
-            <Text style={styles.coffeeEmoji}>☕</Text>
+            <View
+              style={[
+                styles.animation,
+                { alignItems: "center", justifyContent: "center" },
+              ]}
+            >
+              <Text style={{ fontSize: 80 }}>☕</Text>
+              <ActivityIndicator
+                size="large"
+                color={COLORS.white}
+                style={{ marginTop: 16 }}
+              />
+            </View>
           )}
-        </Animated.View>
-        
-        <Text style={styles.title}>Coffee Shop</Text>
-        <Text style={styles.subtitle}>Freshly brewed happiness</Text>
+        </View>
       </View>
 
-      {/* Buttons Section */}
-      <Animated.View 
-        style={[
-          styles.buttonSection,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-      >
+      {/* Bottom Section */}
+      <View style={styles.bottomSection}>
+        <Text style={styles.title}>Coffee Shop</Text>
+        <Text style={styles.subtitle}>
+          Discover the finest coffee, pastries,{"\n"}and sweet treats crafted
+          with love
+        </Text>
+
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={() => navigation.navigate(SCREEN_NAMES.LOGIN as any)}
+          onPress={() => navigation.navigate("Login")}
           activeOpacity={0.8}
         >
-          <Text style={styles.loginButtonText}>Login</Text>
+          <Text style={styles.loginButtonText}>Sign In</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.signUpButton}
-          onPress={() => navigation.navigate(SCREEN_NAMES.REGISTER as any)}
+          style={styles.registerButton}
+          onPress={() => navigation.navigate("Register")}
           activeOpacity={0.8}
         >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+          <Text style={styles.registerButtonText}>Create Account</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          onPress={() => navigation.navigate('MainApp' as any)}
-          style={styles.skipButton}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.skipText}>Browse as Guest</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </LinearGradient>
+        <Text style={styles.footerText}>
+          By continuing, you agree to our Terms of Service
+        </Text>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.primary,
   },
-  logoSection: {
+  topSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: height * 0.1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 40,
   },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  animationContainer: {
+    width: width * 0.7,
+    height: width * 0.7,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  lottieAnimation: {
-    width: 200,
-    height: 200,
+  animation: {
+    width: "100%",
+    height: "100%",
   },
-  coffeeEmoji: {
-    fontSize: 120,
+  bottomSection: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    paddingHorizontal: 30,
+    paddingTop: 35,
+    paddingBottom: 40,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
   },
   title: {
-    fontSize: 42,
-    fontWeight: '700',
-    color: '#4A3428',
-    marginTop: 20,
-    letterSpacing: 1,
+    fontSize: 32,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#8B7355',
-    marginTop: 8,
-    fontStyle: 'italic',
-    letterSpacing: 0.5,
-  },
-  buttonSection: {
-    paddingHorizontal: 32,
-    paddingBottom: 60,
-    gap: 16,
+    fontSize: 15,
+    color: COLORS.textLight,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 30,
   },
   loginButton: {
-    backgroundColor: '#4A3428',
-    paddingVertical: 18,
-    borderRadius: 30,
-    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginBottom: 14,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    color: COLORS.white,
+    fontSize: 17,
+    fontWeight: "700",
   },
-  signUpButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 18,
-    borderRadius: 30,
-    alignItems: 'center',
+  registerButton: {
+    backgroundColor: "transparent",
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#4A3428',
+    borderColor: COLORS.primary,
+    marginBottom: 20,
   },
-  signUpButtonText: {
-    color: '#4A3428',
-    fontSize: 18,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+  registerButtonText: {
+    color: COLORS.primary,
+    fontSize: 17,
+    fontWeight: "700",
   },
-  skipButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  skipText: {
-    color: '#8B7355',
-    fontSize: 15,
-    textDecorationLine: 'underline',
+  footerText: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    textAlign: "center",
   },
 });
 

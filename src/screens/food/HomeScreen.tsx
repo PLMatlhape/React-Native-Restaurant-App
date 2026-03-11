@@ -1,194 +1,320 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+// Home Screen - categories, featured items, search, clean layout
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useMemo, useState } from "react";
 import {
+    Dimensions,
     FlatList,
     Image,
-    ListRenderItemInfo,
-    RefreshControl,
+    Platform,
+    ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View
-} from 'react-native';
-import { useCart } from '../../context/CartContext';
-import { firestoreService } from '../../services/firebase/firestoreService';
-import type { HomeStackParamList } from '../../types';
-import { CATEGORIES, COLORS, SCREEN_NAMES } from '../../utils/constants';
+    View,
+} from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import {
+    Category,
+    dataService,
+    FoodItem,
+} from "../../services/local/dataService";
+import { COLORS } from "../../utils/constants";
 
-type HomeScreenProps = NativeStackScreenProps<HomeStackParamList, 'Home'>;
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = (width - 56) / 2;
 
-interface FoodItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  imageUrl?: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
+interface HomeScreenProps {
+  navigation: any;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { getCartCount } = useCart();
-  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<FoodItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allItems, setAllItems] = useState<FoodItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  useEffect(() => {
-    loadFoodItems();
-  }, []);
+  // Reload data from AsyncStorage every time this screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+      const loadData = async () => {
+        const [items, cats] = await Promise.all([
+          dataService.getAllFoodItemsAsync(),
+          dataService.getCategoriesAsync(),
+        ]);
+        if (isActive) {
+          setAllItems(items);
+          setCategories(cats);
+        }
+      };
+      loadData();
+      return () => {
+        isActive = false;
+      };
+    }, []),
+  );
 
-  useEffect(() => {
-    filterItems();
-  }, [selectedCategory, searchQuery, foodItems]);
+  // Derived data from the loaded items
+  const featuredItems = useMemo(() => {
+    return [...allItems].sort((a, b) => b.rating - a.rating).slice(0, 8);
+  }, [allItems]);
 
-  const loadFoodItems = async (): Promise<void> => {
-    setLoading(true);
-    const result = await firestoreService.getFoodItems();
-    if (result.success && result.data) {
-      setFoodItems(result.data);
-    }
-    setLoading(false);
-  };
+  const popularItems = useMemo(() => {
+    return [...allItems].sort((a, b) => b.reviews - a.reviews).slice(0, 6);
+  }, [allItems]);
 
-  const onRefresh = async (): Promise<void> => {
-    setRefreshing(true);
-    await loadFoodItems();
-    setRefreshing(false);
-  };
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const lowerQuery = searchQuery.toLowerCase();
+    return allItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lowerQuery) ||
+        item.description.toLowerCase().includes(lowerQuery) ||
+        item.category.toLowerCase().includes(lowerQuery),
+    );
+  }, [searchQuery, allItems]);
 
-  const filterItems = (): void => {
-    let items = foodItems;
+  const navigateToFood = useCallback(
+    (item: FoodItem) => {
+      navigation.navigate("FoodDetail", { item });
+    },
+    [navigation],
+  );
 
-    if (selectedCategory !== 'All') {
-      items = items.filter(item => item.category === selectedCategory);
-    }
+  const navigateToCategory = useCallback(
+    (category: string) => {
+      navigation.navigate("Menu", { category });
+    },
+    [navigation],
+  );
 
-    if (searchQuery.trim()) {
-      items = items.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+  // ============================================
+  // RENDER COMPONENTS
+  // ============================================
 
-    setFilteredItems(items);
-  };
-
-  const renderCategoryItem = ({ item }: ListRenderItemInfo<Category>): React.ReactElement => (
+  const renderCategoryItem = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[
-        styles.categoryButton,
-        selectedCategory === item.name && styles.categoryButtonActive
-      ]}
-      onPress={() => setSelectedCategory(item.name)}
+      style={styles.categoryCard}
+      onPress={() => navigateToCategory(item.name)}
+      activeOpacity={0.7}
     >
-      <Text
-        style={[
-          styles.categoryText,
-          selectedCategory === item.name && styles.categoryTextActive
-        ]}
-      >
+      <View style={styles.categoryIconContainer}>
+        <Text style={styles.categoryIcon}>{item.icon}</Text>
+      </View>
+      <Text style={styles.categoryName} numberOfLines={1}>
         {item.name}
       </Text>
+      <Text style={styles.categoryCount}>{item.itemCount} items</Text>
     </TouchableOpacity>
   );
 
-  const renderFoodItem = ({ item }: ListRenderItemInfo<FoodItem>): React.ReactElement => (
+  const renderFoodCard = ({ item }: { item: FoodItem }) => (
     <TouchableOpacity
       style={styles.foodCard}
-      onPress={() => navigation.navigate(SCREEN_NAMES.FOOD_DETAIL as any, { item })}
+      onPress={() => navigateToFood(item)}
+      activeOpacity={0.7}
     >
-      <View style={styles.imageContainer}>
-        {item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.foodImage} />
+      <View style={styles.foodImageContainer}>
+        {item.image ? (
+          <Image
+            source={item.image}
+            style={styles.foodImage}
+            resizeMode="cover"
+          />
         ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.placeholderText}>🖼️</Text>
+          <View style={styles.foodImagePlaceholder}>
+            <Text style={styles.foodImageEmoji}>🍽️</Text>
           </View>
         )}
+        <View style={styles.ratingBadge}>
+          <Text style={styles.ratingText}>⭐ {item.rating}</Text>
+        </View>
       </View>
       <View style={styles.foodInfo}>
         <Text style={styles.foodName} numberOfLines={1}>
           {item.name}
         </Text>
-        <Text style={styles.foodDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-        <Text style={styles.foodPrice}>R{item.price.toFixed(2)}</Text>
+        <Text style={styles.foodCategory}>{item.category}</Text>
+        <View style={styles.foodPriceRow}>
+          <Text style={styles.foodPrice}>R{item.price}</Text>
+          <Text style={styles.foodTime}>⏱ {item.preparationTime}min</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
 
-  const categories: Category[] = [{ id: '0', name: 'All' }, ...CATEGORIES];
+  const renderPopularItem = ({ item }: { item: FoodItem }) => (
+    <TouchableOpacity
+      style={styles.popularCard}
+      onPress={() => navigateToFood(item)}
+      activeOpacity={0.7}
+    >
+      {item.image ? (
+        <Image
+          source={item.image}
+          style={styles.popularImage}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.popularImage, styles.foodImagePlaceholder]}>
+          <Text style={styles.foodImageEmoji}>🍽️</Text>
+        </View>
+      )}
+      <View style={styles.popularInfo}>
+        <Text style={styles.popularName} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.popularDesc} numberOfLines={2}>
+          {item.description}
+        </Text>
+        <View style={styles.popularBottom}>
+          <Text style={styles.popularPrice}>R{item.price}</Text>
+          <Text style={styles.popularRating}>⭐ {item.rating}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderSearchResult = ({ item }: { item: FoodItem }) => (
+    <TouchableOpacity
+      style={styles.searchResultCard}
+      onPress={() => navigateToFood(item)}
+      activeOpacity={0.7}
+    >
+      {item.image ? (
+        <Image
+          source={item.image}
+          style={styles.searchResultImage}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.searchResultImage, styles.foodImagePlaceholder]}>
+          <Text style={{ fontSize: 22 }}>🍽️</Text>
+        </View>
+      )}
+      <View style={styles.searchResultInfo}>
+        <Text style={styles.searchResultName}>{item.name}</Text>
+        <Text style={styles.searchResultCategory}>{item.category}</Text>
+        <Text style={styles.searchResultPrice}>R{item.price}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+
+      {/* HEADER */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Good Day!</Text>
-          <Text style={styles.headerTitle}>Coffee Shop</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={() => navigation.navigate(SCREEN_NAMES.CART as any)}
-        >
-          <Text style={styles.cartIcon}>🛒</Text>
-          {getCartCount() > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{getCartCount()}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for coffee, donuts, cakes..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor={COLORS.textLight}
-        />
-      </View>
-
-      {/* Categories */}
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={categories}
-        renderItem={renderCategoryItem}
-        keyExtractor={item => item.id}
-        style={styles.categoriesList}
-        contentContainerStyle={styles.categoriesContent}
-      />
-
-      {/* Food Items */}
-      <FlatList
-        data={filteredItems}
-        renderItem={renderFoodItem}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.foodList}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {loading ? 'Loading...' : 'No items found'}
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.greeting}>
+              Good{" "}
+              {new Date().getHours() < 12
+                ? "Morning"
+                : new Date().getHours() < 18
+                  ? "Afternoon"
+                  : "Evening"}
+              ! ☀️
             </Text>
+            <Text style={styles.userName}>{user?.name || "Coffee Lover"}</Text>
           </View>
-        }
-      />
+          <TouchableOpacity style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>
+              {(user?.name?.[0] || "C").toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* SEARCH */}
+        <View style={styles.searchContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search coffee, pastries, treats..."
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Text style={styles.clearSearch}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* SEARCH RESULTS */}
+      {searchResults ? (
+        <FlatList
+          data={searchResults}
+          renderItem={renderSearchResult}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.searchResultsList}
+          ListEmptyComponent={
+            <View style={styles.emptySearch}>
+              <Text style={styles.emptySearchEmoji}>🔍</Text>
+              <Text style={styles.emptySearchText}>
+                No results found for "{searchQuery}"
+              </Text>
+            </View>
+          }
+        />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* CATEGORIES */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Categories</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Menu", {})}>
+                <Text style={styles.seeAll}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={categories}
+              renderItem={renderCategoryItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryList}
+            />
+          </View>
+
+          {/* FEATURED */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>⭐ Top Rated</Text>
+            </View>
+            <FlatList
+              data={featuredItems}
+              renderItem={renderFoodCard}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.foodList}
+              snapToInterval={CARD_WIDTH + 14}
+              decelerationRate="fast"
+            />
+          </View>
+
+          {/* POPULAR */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>🔥 Popular Now</Text>
+            </View>
+            {popularItems.map((item) => (
+              <View key={item.id}>{renderPopularItem({ item })}</View>
+            ))}
+          </View>
+
+          <View style={{ height: 20 }} />
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -199,147 +325,301 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: 50,
     backgroundColor: COLORS.primary,
+    paddingTop: Platform.OS === "ios" ? 56 : 44,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
   },
   greeting: {
     fontSize: 14,
-    color: COLORS.cream,
+    color: "rgba(255,255,255,0.7)",
+    marginBottom: 4,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  userName: {
+    fontSize: 22,
+    fontWeight: "bold",
     color: COLORS.white,
   },
-  cartButton: {
-    position: 'relative',
-    padding: 10,
+  avatarContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  cartIcon: {
-    fontSize: 28,
-  },
-  badge: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: COLORS.error,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badgeText: {
+  avatarText: {
+    fontSize: 18,
+    fontWeight: "bold",
     color: COLORS.white,
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   searchContainer: {
-    padding: 20,
-    paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 48,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 10,
   },
   searchInput: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 15,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  categoriesList: {
-    maxHeight: 60,
-  },
-  categoriesContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  categoryButton: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  categoryButtonActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  categoryText: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  categoryTextActive: {
+    flex: 1,
+    fontSize: 15,
     color: COLORS.white,
   },
+  clearSearch: {
+    fontSize: 16,
+    color: "rgba(255,255,255,0.7)",
+    paddingLeft: 8,
+  },
+  scrollContent: {
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.text,
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  // Categories
+  categoryList: {
+    paddingHorizontal: 16,
+  },
+  categoryCard: {
+    alignItems: "center",
+    marginHorizontal: 6,
+    width: 80,
+  },
+  categoryIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  categoryIcon: {
+    fontSize: 28,
+  },
+  categoryName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.text,
+    textAlign: "center",
+  },
+  categoryCount: {
+    fontSize: 10,
+    color: COLORS.textLight,
+    marginTop: 2,
+  },
+  // Food Cards (horizontal)
   foodList: {
-    padding: 10,
+    paddingHorizontal: 16,
   },
   foodCard: {
-    flex: 1,
+    width: CARD_WIDTH,
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    margin: 10,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
+    borderRadius: 16,
+    marginHorizontal: 7,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+    overflow: "hidden",
   },
-  imageContainer: {
-    width: '100%',
-    height: 120,
+  foodImageContainer: {
+    position: "relative",
   },
   foodImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: CARD_WIDTH * 0.7,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
-  placeholderImage: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: COLORS.lightBrown,
-    justifyContent: 'center',
-    alignItems: 'center',
+  foodImagePlaceholder: {
+    backgroundColor: COLORS.secondary,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  placeholderText: {
+  foodImageEmoji: {
     fontSize: 40,
+  },
+  ratingBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  ratingText: {
+    color: COLORS.white,
+    fontSize: 11,
+    fontWeight: "600",
   },
   foodInfo: {
     padding: 12,
   },
   foodName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: "700",
     color: COLORS.text,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  foodDescription: {
-    fontSize: 12,
+  foodCategory: {
+    fontSize: 11,
     color: COLORS.textLight,
-    marginBottom: 8,
+    marginBottom: 6,
+  },
+  foodPriceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   foodPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
+  foodTime: {
+    fontSize: 11,
+    color: COLORS.textLight,
   },
-  emptyText: {
+  // Popular Items (vertical list)
+  popularCard: {
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    marginHorizontal: 20,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: "hidden",
+  },
+  popularImage: {
+    width: 100,
+    height: 100,
+  },
+  popularInfo: {
+    flex: 1,
+    padding: 12,
+    justifyContent: "space-between",
+  },
+  popularName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+  popularDesc: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    lineHeight: 17,
+  },
+  popularBottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  popularPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.primary,
+  },
+  popularRating: {
+    fontSize: 12,
+    color: COLORS.textLight,
+  },
+  // Search Results
+  searchResultsList: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  searchResultCard: {
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    marginBottom: 12,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchResultImage: {
+    width: 80,
+    height: 80,
+  },
+  searchResultInfo: {
+    flex: 1,
+    padding: 12,
+    justifyContent: "center",
+  },
+  searchResultName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  searchResultCategory: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginBottom: 4,
+  },
+  searchResultPrice: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: COLORS.primary,
+  },
+  emptySearch: {
+    alignItems: "center",
+    paddingTop: 60,
+  },
+  emptySearchEmoji: {
+    fontSize: 50,
+    marginBottom: 16,
+  },
+  emptySearchText: {
     fontSize: 16,
     color: COLORS.textLight,
+    textAlign: "center",
   },
 });
 

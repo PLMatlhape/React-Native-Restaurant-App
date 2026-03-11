@@ -1,9 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-    User as FirebaseUser,
-    onAuthStateChanged,
-    Unsubscribe,
-} from "firebase/auth";
+// Auth context - local AsyncStorage-based authentication
+// No Firebase dependency
+
 import React, {
     createContext,
     ReactNode,
@@ -11,23 +8,33 @@ import React, {
     useEffect,
     useState,
 } from "react";
-import { authService } from "../services/firebase/authService";
-import { auth } from "../services/firebase/config";
-import { AuthResult, User, UserProfile } from "../types";
+import { authService, UserData } from "../services/local/authService";
 
 interface AuthContextType {
-  user: FirebaseUser | null;
-  userData: User | null;
-  isAdmin: boolean;
+  user: UserData | null;
   loading: boolean;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   register: (
     email: string,
     password: string,
-    userData: Partial<UserProfile>,
-  ) => Promise<AuthResult>;
-  login: (email: string, password: string) => Promise<AuthResult>;
-  logout: () => Promise<AuthResult>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<AuthResult>;
+    userData: {
+      name: string;
+      surname: string;
+      contactNumber: string;
+      address: string;
+    },
+  ) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  updateProfile: (
+    updates: Partial<
+      Pick<UserData, "name" | "surname" | "contactNumber" | "address">
+    >,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -37,160 +44,101 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribe: Unsubscribe | null = null;
-    let mounted = true;
-
-    unsubscribe = onAuthStateChanged(
-      auth,
-      async (firebaseUser) => {
-        if (!mounted) return;
-        try {
-          if (firebaseUser) {
-            setUser(firebaseUser);
-            // Fetch user data from Firestore
-            const result = await authService.getUserData(firebaseUser.uid);
-            if (result.success && result.data && mounted) {
-              const userData = result.data as unknown as User;
-              setUserData(userData);
-              setIsAdmin(userData?.role === "admin");
-              // Cache user data
-              await AsyncStorage.setItem(
-                "userData",
-                JSON.stringify(result.data),
-              );
-            }
-          } else {
-            setUser(null);
-            setUserData(null);
-            setIsAdmin(false);
-            await AsyncStorage.removeItem("userData");
-          }
-        } catch (error) {
-          console.error("Auth state change error:", error);
-        } finally {
-          if (mounted) setLoading(false);
-        }
-      },
-      (error) => {
-        console.error("Firebase auth error:", error);
-        if (mounted) setLoading(false);
-      },
-    );
-
-    return () => {
-      mounted = false;
-      if (unsubscribe) unsubscribe();
-    };
+    initializeApp();
   }, []);
+
+  const initializeApp = async () => {
+    try {
+      await authService.seedAdmin(); // Ensure admin account exists
+      const currentUser = await authService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error("App initialization failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const result = await authService.login(email, password);
+      if (result.success && result.user) {
+        setUser(result.user);
+        return { success: true };
+      }
+      return { success: false, error: result.error || "Login failed" };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  };
 
   const register = async (
     email: string,
     password: string,
-    userDataInput: Partial<UserProfile>,
-  ): Promise<AuthResult> => {
+    userData: {
+      name: string;
+      surname: string;
+      contactNumber: string;
+      address: string;
+    },
+  ) => {
     try {
-      // Ensure required fields have default values
-      const userData = {
-        name: userDataInput.name || "",
-        surname: userDataInput.surname || "",
-        contactNumber: userDataInput.contactNumber || "",
-        address: userDataInput.address || "",
-        cardNumber: userDataInput.cardNumber,
-        cardHolder: userDataInput.cardHolder,
-        expiryDate: userDataInput.expiryDate,
-        cvv: userDataInput.cvv,
-      };
       const result = await authService.register(email, password, userData);
-      if (result.success) {
-        return { success: true };
-      }
-      return { success: false, error: result.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const login = async (
-    email: string,
-    password: string,
-  ): Promise<AuthResult> => {
-    try {
-      const result = await authService.login(email, password);
       if (result.success && result.user) {
-        setUser(result.user as FirebaseUser);
-        if (result.userData) {
-          const userData = result.userData as unknown as User;
-          setUserData(userData);
-          setIsAdmin(userData?.role === "admin");
-        }
+        setUser(result.user);
         return { success: true };
       }
-      return { success: false, error: result.error };
+      return { success: false, error: result.error || "Registration failed" };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   };
 
-  const logout = async (): Promise<AuthResult> => {
-    try {
-      const result = await authService.logout();
-      if (result.success) {
-        setUser(null);
-        setUserData(null);
-        setIsAdmin(false);
-        return { success: true };
-      }
-      return { success: false, error: result.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
+  const logout = async () => {
+    await authService.logout();
+    setUser(null);
   };
 
   const updateProfile = async (
-    updates: Partial<UserProfile>,
-  ): Promise<AuthResult> => {
+    updates: Partial<
+      Pick<UserData, "name" | "surname" | "contactNumber" | "address">
+    >,
+  ) => {
+    if (!user) return { success: false, error: "Not logged in" };
     try {
-      if (!user) {
-        return { success: false, error: "No user logged in" };
-      }
-      const result = await authService.updateUserProfile(user.uid, updates);
-      if (result.success) {
-        // Refresh user data
-        const userDataResult = await authService.getUserData(user.uid);
-        if (userDataResult.success && userDataResult.data) {
-          const userData = userDataResult.data as unknown as User;
-          setUserData(userData);
-          await AsyncStorage.setItem(
-            "userData",
-            JSON.stringify(userDataResult.data),
-          );
-        }
+      const result = await authService.updateProfile(user.id, updates);
+      if (result.success && result.user) {
+        setUser(result.user);
         return { success: true };
       }
-      return { success: false, error: result.error };
+      return { success: false, error: result.error || "Update failed" };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   };
 
-  const value: AuthContextType = {
-    user,
-    userData,
-    isAdmin,
-    loading,
-    register,
-    login,
-    logout,
-    updateProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === "admin",
+        login,
+        register,
+        logout,
+        updateProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthContextType => {
@@ -200,3 +148,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+export default AuthContext;
