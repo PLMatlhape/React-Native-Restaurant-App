@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import BeanAnimation from "../../components/common/BeanAnimation";
 import { useAuth } from "../../context/AuthContext";
 import { COLORS } from "../../utils/constants";
 
@@ -89,6 +90,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 style={{ width: 24, height: 24, tintColor: COLORS.primary }}
               />
             </TouchableOpacity>
+            <View style={styles.headerAnimationWrap}>
+              <BeanAnimation size={120} />
+            </View>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>
               Join Coffee Shop and start ordering
@@ -242,6 +246,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 4,
     alignSelf: "flex-start",
+  },
+  headerAnimationWrap: {
+    alignItems: "center",
+    marginBottom: 6,
   },
   backText: {
     fontSize: 28,

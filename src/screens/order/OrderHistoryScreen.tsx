@@ -28,13 +28,32 @@ interface OrderHistoryScreenProps {
 
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; color: string; icon: string }
+  {
+    label: string;
+    color: string;
+    icon?: string;
+    iconAsset?: any;
+    iconTint?: string;
+  }
 > = {
-  pending: { label: "Pending", color: COLORS.warning, icon: "⏳" },
-  confirmed: { label: "Confirmed", color: "#2196F3", icon: "✅" },
+  pending: {
+    label: "Pending",
+    color: COLORS.warning,
+    iconAsset: require("../../../assets/icon/icons8-pending-100.png"),
+  },
+  confirmed: {
+    label: "Confirmed",
+    color: "#2196F3",
+    iconAsset: require("../../../assets/icon/icons8-done-50.png"),
+    iconTint: "#2196F3",
+  },
   preparing: { label: "Preparing", color: "#FF9800", icon: "👨‍🍳" },
   ready: { label: "Ready", color: "#4CAF50", icon: "📦" },
-  delivered: { label: "Delivered", color: COLORS.success, icon: "🎉" },
+  delivered: {
+    label: "Delivered",
+    color: COLORS.success,
+    iconAsset: require("../../../assets/icon/icons8-motorcycle-delivery-single-box-50.png"),
+  },
   cancelled: { label: "Cancelled", color: COLORS.error, icon: "❌" },
 };
 
@@ -127,7 +146,19 @@ const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({
               { backgroundColor: statusInfo.color + "20" },
             ]}
           >
-            <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
+            {statusInfo.iconAsset ? (
+              <Image
+                source={statusInfo.iconAsset}
+                style={[
+                  styles.statusIconImg,
+                  statusInfo.iconTint
+                    ? { tintColor: statusInfo.iconTint }
+                    : undefined,
+                ]}
+              />
+            ) : (
+              <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
+            )}
             <Text style={[styles.statusLabel, { color: statusInfo.color }]}>
               {statusInfo.label}
             </Text>
@@ -425,6 +456,12 @@ const styles = StyleSheet.create({
   statusIcon: {
     fontSize: 13,
     marginRight: 5,
+  },
+  statusIconImg: {
+    width: 14,
+    height: 14,
+    marginRight: 6,
+    resizeMode: "contain",
   },
   statusLabel: {
     fontSize: 12,

@@ -1,5 +1,12 @@
 // Admin Menu Management Screen - CRUD operations for food items
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -19,6 +26,7 @@ import {
 } from "react-native";
 import { dataService, FoodItem } from "../../services/local/dataService";
 import { COLORS } from "../../utils/constants";
+import { categoryImages, getImageForFood } from "../../utils/imageMap";
 
 // ============================================
 // TYPES
@@ -29,6 +37,7 @@ type FormData = {
   description: string;
   price: string;
   category: string;
+  imageUri?: string;
   rating: string;
   reviews: string;
   preparationTime: string;
@@ -41,6 +50,7 @@ const EMPTY_FORM: FormData = {
   description: "",
   price: "",
   category: "Coffee",
+  imageUri: undefined,
   rating: "4.5",
   reviews: "0",
   preparationTime: "5",
@@ -76,6 +86,7 @@ const AdminMenuScreen: React.FC = () => {
   const [editingItem, setEditingItem] = useState<FoodItem | null>(null);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const menuListRef = useRef<FlatList<FoodItem> | null>(null);
 
   // ---- LOAD DATA ----
   const loadItems = useCallback(async () => {
@@ -121,6 +132,12 @@ const AdminMenuScreen: React.FC = () => {
     return ["All", ...cats.sort()];
   }, [items]);
 
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      menuListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    });
+  }, [filterCategory, search]);
+
   // ---- FORM HELPERS ----
   const openAddModal = () => {
     setEditingItem(null);
@@ -129,12 +146,18 @@ const AdminMenuScreen: React.FC = () => {
   };
 
   const openEditModal = (item: FoodItem) => {
+    const itemImageUri =
+      item.image && typeof item.image === "object" && item.image.uri
+        ? item.image.uri
+        : item.imageUri;
+
     setEditingItem(item);
     setForm({
       name: item.name,
       description: item.description,
       price: item.price.toString(),
       category: item.category,
+      imageUri: itemImageUri,
       rating: item.rating.toString(),
       reviews: item.reviews.toString(),
       preparationTime: item.preparationTime.toString(),
@@ -148,6 +171,49 @@ const AdminMenuScreen: React.FC = () => {
     setModalVisible(false);
     setEditingItem(null);
     setForm(EMPTY_FORM);
+  };
+
+  const getFormPreviewImage = () => {
+    if (form.imageUri && form.imageUri.trim().length > 0) {
+      return { uri: form.imageUri.trim() };
+    }
+
+    const nameMatch = form.name.trim().length
+      ? getImageForFood(form.name.trim(), form.category)
+      : null;
+
+    return nameMatch || categoryImages[form.category] || null;
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission required",
+          "Please allow photo library access to select an item image.",
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.length) {
+        setForm((f) => ({ ...f, imageUri: result.assets[0].uri }));
+      }
+    } catch {
+      Alert.alert("Error", "Could not open image library");
+    }
+  };
+
+  const handleUseCategoryImage = () => {
+    setForm((f) => ({ ...f, imageUri: undefined }));
   };
 
   const validateForm = (): string | null => {
@@ -182,6 +248,7 @@ const AdminMenuScreen: React.FC = () => {
         description: form.description.trim(),
         price: Number(form.price),
         category: form.category,
+        imageUri: form.imageUri?.trim() || undefined,
         rating: Number(form.rating) || 4.5,
         reviews: Number(form.reviews) || 0,
         preparationTime: Number(form.preparationTime) || 5,
@@ -305,7 +372,12 @@ const AdminMenuScreen: React.FC = () => {
         </View>
         <View style={styles.itemActions}>
           <TouchableOpacity
-            style={styles.actionBtn}
+            style={[
+              styles.actionBtn,
+              item.isAvailable
+                ? styles.availableBtn
+                : styles.unavailableActionBtn,
+            ]}
             onPress={() => handleToggleAvailability(item)}
             activeOpacity={0.7}
           >
@@ -314,7 +386,7 @@ const AdminMenuScreen: React.FC = () => {
               style={[
                 styles.actionIcon,
                 {
-                  tintColor: item.isAvailable ? COLORS.success : COLORS.error,
+                  tintColor: item.isAvailable ? COLORS.success : COLORS.primary,
                 },
               ]}
             />
@@ -326,7 +398,7 @@ const AdminMenuScreen: React.FC = () => {
           >
             <Image
               source={require("../../../assets/icon/icons8-pen-64.png")}
-              style={[styles.actionIcon, { tintColor: "#1565C0" }]}
+              style={[styles.actionIcon, { tintColor: COLORS.primary }]}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -486,6 +558,55 @@ const AdminMenuScreen: React.FC = () => {
             </ScrollView>
           </View>
 
+          {/* Image Picker */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Item Image</Text>
+            <View style={styles.imagePickerCard}>
+              {getFormPreviewImage() ? (
+                <Image
+                  source={getFormPreviewImage()}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <View
+                  style={[styles.imagePreview, styles.imagePreviewPlaceholder]}
+                >
+                  <Text style={styles.imagePreviewPlaceholderText}>
+                    No image
+                  </Text>
+                </View>
+              )}
+              <View style={styles.imagePickerActions}>
+                <TouchableOpacity
+                  style={styles.imagePickerButton}
+                  onPress={handlePickImage}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.imagePickerButtonText}>
+                    Choose from gallery
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.imagePickerButton,
+                    styles.imagePickerButtonSecondary,
+                  ]}
+                  onPress={handleUseCategoryImage}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.imagePickerButtonText,
+                      styles.imagePickerButtonSecondaryText,
+                    ]}
+                  >
+                    Use category image
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
           {/* Rating & Prep Time */}
           <View style={styles.formRow}>
             <View style={[styles.formGroup, { flex: 1, marginRight: 10 }]}>
@@ -631,6 +752,7 @@ const AdminMenuScreen: React.FC = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.filterScroll}
         contentContainerStyle={styles.filterRow}
       >
         {categories.map((cat) => (
@@ -644,15 +766,14 @@ const AdminMenuScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text
+              allowFontScaling={false}
+              numberOfLines={1}
               style={[
                 styles.filterChipText,
                 filterCategory === cat && styles.filterChipTextActive,
               ]}
             >
-              {cat}{" "}
-              {cat === "All"
-                ? `(${items.length})`
-                : `(${items.filter((i) => i.category === cat).length})`}
+              {`${cat} (${cat === "All" ? items.length : items.filter((i) => i.category === cat).length})`}
             </Text>
           </TouchableOpacity>
         ))}
@@ -660,10 +781,12 @@ const AdminMenuScreen: React.FC = () => {
 
       {/* Item List */}
       <FlatList
+        ref={menuListRef}
         data={filteredItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={<View style={styles.listTopSpacer} />}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={handleRefresh}
@@ -776,19 +899,25 @@ const styles = StyleSheet.create({
   },
 
   // Category Filter
+  filterScroll: {
+    minHeight: 46,
+    maxHeight: 46,
+    marginTop: 2,
+    marginBottom: 12,
+  },
   filterRow: {
     paddingHorizontal: 12,
-    paddingBottom: 10,
     gap: 8,
+    alignItems: "center",
   },
   filterChip: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 9,
+    paddingVertical: 0,
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    minHeight: 38,
+    height: 38,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -800,7 +929,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.text,
-    lineHeight: 18,
+    lineHeight: 17,
+    includeFontPadding: false,
   },
   filterChipTextActive: {
     color: COLORS.white,
@@ -809,7 +939,11 @@ const styles = StyleSheet.create({
   // Item Card
   listContent: {
     paddingHorizontal: 12,
+    paddingTop: 0,
     paddingBottom: 80,
+  },
+  listTopSpacer: {
+    height: 12,
   },
   itemCard: {
     backgroundColor: COLORS.white,
@@ -891,8 +1025,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: COLORS.background,
   },
+  availableBtn: {
+    backgroundColor: COLORS.cream,
+  },
+  unavailableActionBtn: {
+    backgroundColor: COLORS.lightBrown,
+  },
   editBtn: {
-    backgroundColor: "#E3F2FD",
+    backgroundColor: COLORS.cream,
   },
   deleteBtn: {
     backgroundColor: "#FFEBEE",
@@ -1076,6 +1216,53 @@ const styles = StyleSheet.create({
   },
   categoryChipTextActive: {
     color: COLORS.white,
+  },
+  imagePickerCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 12,
+    gap: 10,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+  },
+  imagePreviewPlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imagePreviewPlaceholderText: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    fontWeight: "600",
+  },
+  imagePickerActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  imagePickerButton: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  imagePickerButtonSecondary: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  imagePickerButtonText: {
+    fontSize: 12,
+    color: COLORS.white,
+    fontWeight: "700",
+  },
+  imagePickerButtonSecondaryText: {
+    color: COLORS.text,
   },
 });
 

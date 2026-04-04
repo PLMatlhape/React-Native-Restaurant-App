@@ -2,15 +2,17 @@
 // PaymentIntents are created on the backend (secret key is server-side only).
 // The client only uses the publishable key for the Stripe SDK.
 
+import { Platform } from "react-native";
+
 // Stripe publishable key from .env
 export const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
-  "pk_test_TYooMQauvdEDq54NiTphI7jx";
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 
 // Backend server URL — use your machine's LAN IP for real-device testing
 // e.g. "http://192.168.x.x:3001"
 const BACKEND_URL =
-  process.env.EXPO_PUBLIC_BACKEND_URL || "http://10.0.2.2:3001";
+  process.env.EXPO_PUBLIC_BACKEND_URL ||
+  (Platform.OS === "web" ? "http://localhost:3001" : "http://10.0.2.2:3001");
 
 interface PaymentIntentResponse {
   clientSecret: string;
@@ -32,6 +34,12 @@ export const stripeService = {
     amountInRands: number,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResponse> => {
+    if (!STRIPE_PUBLISHABLE_KEY) {
+      throw new Error(
+        "Stripe publishable key is missing. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
+      );
+    }
+
     const response = await fetch(`${BACKEND_URL}/api/payments/create-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -152,35 +160,14 @@ export const stripeService = {
         transactionId: paymentIntent?.id || paymentIntentId,
       };
     } catch (error: any) {
-      // If Stripe SDK not available (Expo Go), fall back to simulation
-      console.warn(
-        "Stripe SDK not available, using simulated payment:",
-        error.message,
-      );
-      return stripeService.simulatePayment(amountInRands);
-    }
-  },
-
-  /**
-   * Simulated payment for Expo Go (no native Stripe SDK).
-   * For real payments, use an EAS development build.
-   */
-  simulatePayment: async (amountInRands: number): Promise<PaymentResult> => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const success = Math.random() < 0.95;
-    if (!success) {
+      console.warn("Stripe payment failed:", error?.message || error);
       return {
         success: false,
-        error: "Payment declined. Please try a different card.",
+        error:
+          error?.message ||
+          "Card payment could not be completed. Verify backend and Stripe setup.",
       };
     }
-
-    const transactionId = `TXN-${Date.now().toString(36).toUpperCase()}`;
-    return {
-      success: true,
-      transactionId,
-    };
   },
 
   /**

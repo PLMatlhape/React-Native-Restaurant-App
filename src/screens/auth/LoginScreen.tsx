@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import BeanAnimation from "../../components/common/BeanAnimation";
 import { useAuth } from "../../context/AuthContext";
 import { COLORS } from "../../utils/constants";
 
@@ -65,7 +66,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 style={{ width: 24, height: 24, tintColor: COLORS.primary }}
               />
             </TouchableOpacity>
-            <Text style={styles.emoji}>☕</Text>
+            <BeanAnimation size={130} />
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>
               Sign in to your Coffee Shop account
@@ -162,10 +163,6 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 28,
     color: COLORS.primary,
-  },
-  emoji: {
-    fontSize: 50,
-    marginBottom: 16,
   },
   title: {
     fontSize: 28,

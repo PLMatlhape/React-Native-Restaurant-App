@@ -1,7 +1,13 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { Category } from '../../types';
-import { COLORS } from '../../utils/constants';
+import React from "react";
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    ViewStyle,
+} from "react-native";
+import { Category } from "../../types";
+import { COLORS } from "../../utils/constants";
 
 interface CategoryFilterProps {
   categories: Category[];
@@ -14,7 +20,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categories,
   selectedCategory,
   onSelectCategory,
-  style
+  style,
 }) => {
   return (
     <ScrollView
@@ -35,6 +41,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         >
           {category.icon && <Text style={styles.icon}>{category.icon}</Text>}
           <Text
+            allowFontScaling={false}
+            numberOfLines={1}
             style={[
               styles.categoryText,
               selectedCategory === category.name && styles.categoryTextActive,
@@ -50,22 +58,27 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    maxHeight: 60,
+    minHeight: 50,
+    maxHeight: 50,
+    marginTop: 10,
+    marginBottom: 10,
   },
   content: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 0,
+    alignItems: "center",
   },
   categoryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 0,
     borderRadius: 20,
     marginRight: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
+    height: 40,
   },
   categoryButtonActive: {
     backgroundColor: COLORS.primary,
@@ -78,7 +91,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   categoryTextActive: {
     color: COLORS.white,

@@ -1,5 +1,4 @@
 // Checkout Screen - Stripe payment integration + delivery address options
-import { CardField, useConfirmPayment } from "@stripe/stripe-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import {
     ActivityIndicator,
@@ -18,6 +17,10 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { orderService } from "../../services/local/orderService";
+import {
+    CardField,
+    useConfirmPayment,
+} from "../../services/local/stripeNative";
 import { stripeService } from "../../services/local/stripeService";
 import { COLORS } from "../../utils/constants";
 

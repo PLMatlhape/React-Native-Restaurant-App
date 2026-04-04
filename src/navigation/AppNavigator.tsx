@@ -90,7 +90,7 @@ const HomeStack: React.FC = () => (
     />
     <Stack.Screen
       name="FoodDetail"
-      component={FoodDetailScreen}
+      component={FoodDetailScreen as React.ComponentType<any>}
       options={{ title: "Details" }}
     />
   </Stack.Navigator>
@@ -120,7 +120,7 @@ const CartStack: React.FC = () => (
     />
     <Stack.Screen
       name="PaymentGateway"
-      component={PaymentGatewayScreen}
+      component={PaymentGatewayScreen as React.ComponentType<any>}
       options={{
         title: "Payment",
         headerLeft: () => null,

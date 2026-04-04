@@ -1,5 +1,5 @@
 // Admin Orders Screen - manage all customer orders
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     Alert,
     FlatList,
@@ -27,14 +27,22 @@ type FilterTab = "all" | "pending" | "active" | "completed";
 
 const STATUS_INFO: Record<
   OrderStatus,
-  { label: string; color: string; bg: string; icon: string }
+  {
+    label: string;
+    color: string;
+    bg: string;
+    icon?: string;
+    iconAsset?: any;
+    iconTint?: string;
+  }
 > = {
   pending: { label: "Pending", color: "#E65100", bg: "#FFF3E0", icon: "⏳" },
   confirmed: {
     label: "Confirmed",
     color: "#1565C0",
     bg: "#E3F2FD",
-    icon: "✅",
+    iconAsset: require("../../../assets/icon/icons8-done-50.png"),
+    iconTint: "#1565C0",
   },
   preparing: {
     label: "Preparing",
@@ -47,7 +55,7 @@ const STATUS_INFO: Record<
     label: "Delivered",
     color: "#1B5E20",
     bg: "#E8F5E9",
-    icon: "🎉",
+    iconAsset: require("../../../assets/icon/icons8-motorcycle-delivery-single-box-50.png"),
   },
   cancelled: {
     label: "Cancelled",
@@ -84,6 +92,7 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const ordersListRef = useRef<FlatList<Order> | null>(null);
 
   const getCustomizationDetails = (customizations: any) => {
     if (!customizations) return null;
@@ -119,6 +128,12 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     });
     return unsubscribe;
   }, [navigation, fetchOrders]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      ordersListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    });
+  }, [activeTab]);
 
   // Auto-refresh every 15 seconds
   useEffect(() => {
@@ -241,7 +256,17 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             </Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: info.bg }]}>
-            <Text style={styles.statusIcon}>{info.icon}</Text>
+            {info.iconAsset ? (
+              <Image
+                source={info.iconAsset}
+                style={[
+                  styles.statusIconImg,
+                  info.iconTint ? { tintColor: info.iconTint } : undefined,
+                ]}
+              />
+            ) : (
+              <Text style={styles.statusIcon}>{info.icon}</Text>
+            )}
             <Text style={[styles.statusText, { color: info.color }]}>
               {info.label}
             </Text>
@@ -470,7 +495,11 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               onPress={() => setActiveTab(tab.key)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+              <Text
+                allowFontScaling={false}
+                numberOfLines={1}
+                style={[styles.tabText, isActive && styles.tabTextActive]}
+              >
                 {tab.label}
               </Text>
               {count > 0 && (
@@ -478,6 +507,7 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                   style={[styles.tabBadge, isActive && styles.tabBadgeActive]}
                 >
                   <Text
+                    allowFontScaling={false}
                     style={[
                       styles.tabBadgeText,
                       isActive && styles.tabBadgeTextActive,
@@ -494,10 +524,12 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
       {/* Orders List */}
       <FlatList
+        ref={ordersListRef}
         data={filteredOrders}
         renderItem={renderOrder}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={<View style={styles.listTopSpacer} />}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -568,18 +600,22 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: "row",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 10,
+    marginBottom: 4,
     gap: 8,
+    alignItems: "center",
   },
   tab: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 0,
     borderRadius: 20,
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
+    height: 36,
   },
   tabActive: {
     backgroundColor: COLORS.primary,
@@ -616,7 +652,10 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-    paddingTop: 8,
+    paddingTop: 0,
+  },
+  listTopSpacer: {
+    height: 8,
   },
   orderCard: {
     backgroundColor: COLORS.white,
@@ -654,6 +693,12 @@ const styles = StyleSheet.create({
   statusIcon: {
     fontSize: 13,
     marginRight: 4,
+  },
+  statusIconImg: {
+    width: 14,
+    height: 14,
+    marginRight: 4,
+    resizeMode: "contain",
   },
   statusText: {
     fontSize: 12,

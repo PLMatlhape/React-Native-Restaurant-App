@@ -16,6 +16,7 @@ export interface FoodItem {
   price: number;
   category: string;
   image: any;
+  imageUri?: string;
   rating: number;
   reviews: number;
   preparationTime: number;
@@ -806,13 +807,17 @@ export const dataService = {
     try {
       const customItems = await loadCustomItems();
       const newId = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const imageUri = item.imageUri?.trim();
       const newItem: FoodItem = {
         ...item,
         id: newId,
+        imageUri,
         image:
-          getImageForFood(item.name, item.category) ||
-          categoryImages[item.category] ||
-          null,
+          imageUri && imageUri.length > 0
+            ? { uri: imageUri }
+            : getImageForFood(item.name, item.category) ||
+              categoryImages[item.category] ||
+              null,
       };
       customItems.push(newItem);
       await saveCustomItems(customItems);
@@ -834,43 +839,57 @@ export const dataService = {
 
       if (customIndex >= 0) {
         // Update custom item directly
+        const currentItem = customItems[customIndex];
+        const nextName = updates.name || currentItem.name;
+        const nextCategory = updates.category || currentItem.category;
+        const nextImageUri =
+          updates.imageUri !== undefined
+            ? updates.imageUri
+            : currentItem.imageUri;
+
         customItems[customIndex] = {
-          ...customItems[customIndex],
+          ...currentItem,
           ...updates,
           id, // preserve id
+          imageUri: nextImageUri,
           image:
-            updates.name || updates.category
-              ? getImageForFood(
-                  updates.name || customItems[customIndex].name,
-                  updates.category || customItems[customIndex].category,
-                ) ||
-                categoryImages[
-                  updates.category || customItems[customIndex].category
-                ] ||
-                customItems[customIndex].image
-              : customItems[customIndex].image,
+            nextImageUri && nextImageUri.trim().length > 0
+              ? { uri: nextImageUri }
+              : getImageForFood(nextName, nextCategory) ||
+                categoryImages[nextCategory] ||
+                currentItem.image,
         };
         await saveCustomItems(customItems);
       } else {
         // It's a static item - save override
         const updatedItems = await loadUpdatedItems();
-        updatedItems[id] = {
-          ...(updatedItems[id] || {}),
-          ...updates,
-        };
-        // Re-map image if name/category changed
-        if (updates.name || updates.category) {
-          const staticItem = FOOD_ITEMS.find((item) => item.id === id);
-          if (staticItem) {
-            updatedItems[id].image =
-              getImageForFood(
-                updates.name || staticItem.name,
-                updates.category || staticItem.category,
-              ) ||
-              categoryImages[updates.category || staticItem.category] ||
-              staticItem.image;
-          }
+        const staticItem = FOOD_ITEMS.find((item) => item.id === id);
+        if (!staticItem) {
+          return { success: false, error: "Item not found" };
         }
+
+        const existingOverride = updatedItems[id] || {};
+        const nextName =
+          updates.name || existingOverride.name || staticItem.name;
+        const nextCategory =
+          updates.category || existingOverride.category || staticItem.category;
+        const nextImageUri =
+          updates.imageUri !== undefined
+            ? updates.imageUri
+            : existingOverride.imageUri;
+
+        updatedItems[id] = {
+          ...existingOverride,
+          ...updates,
+          imageUri: nextImageUri,
+          image:
+            nextImageUri && nextImageUri.trim().length > 0
+              ? { uri: nextImageUri }
+              : getImageForFood(nextName, nextCategory) ||
+                categoryImages[nextCategory] ||
+                staticItem.image,
+        };
+
         await saveUpdatedItems(updatedItems);
       }
       return { success: true };

@@ -4,19 +4,21 @@
     "slug": "React-Native-Restaurant-App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon/icons8-coffee-cup-64.png",
+    "icon": "./assets/icon/icons8-cup-64.png",
     "scheme": "coffeeshop",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.matlhape.ReactNativeRestaurantApp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6F4E37",
-        "foregroundImage": "./assets/icon/icons8-coffee-cup-64.png"
+        "foregroundImage": "./assets/icon/icons8-cup-64.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.matlhape.ReactNativeRestaurantApp"
     },
@@ -24,8 +26,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icon/icons8-coffee-cup-64.png",
-          "imageWidth": 200,
+          "image": "./assets/icon/icons8-cup-64.png",
+          "imageWidth": 120,
           "resizeMode": "contain",
           "backgroundColor": "#6F4E37",
           "dark": {
@@ -34,16 +36,9 @@
         }
       ],
       [
-        "@stripe/stripe-react-native",
-        {
-          "merchantIdentifier": "merchant.com.matlhape.coffeeshop",
-          "enableGooglePay": true
-        }
-      ],
-      [
         "expo-notifications",
         {
-          "icon": "./assets/icon/icons8-coffee-cup-64.png",
+          "icon": "./assets/icon/icons8-cup-64.png",
           "color": "#6F4E37"
         }
       ]

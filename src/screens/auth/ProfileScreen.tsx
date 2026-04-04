@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import {
     Alert,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -99,8 +100,15 @@ const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Profile Details</Text>
             {!editing && (
-              <TouchableOpacity onPress={() => setEditing(true)}>
-                <Text style={styles.editBtn}>Edit ✏️</Text>
+              <TouchableOpacity
+                onPress={() => setEditing(true)}
+                style={styles.editBtnRow}
+              >
+                <Text style={styles.editBtn}>Edit</Text>
+                <Image
+                  source={require("../../../assets/icon/icons8-pen-64.png")}
+                  style={styles.editBtnIcon}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -286,6 +294,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "600",
+  },
+  editBtnRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  editBtnIcon: {
+    width: 16,
+    height: 16,
+    tintColor: COLORS.primary,
+    resizeMode: "contain",
   },
   field: {
     marginBottom: 16,

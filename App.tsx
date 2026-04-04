@@ -1,5 +1,4 @@
 // App.tsx - Root component
-import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
 import React, {
     Component,
@@ -21,6 +20,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "./src/context/AuthContext";
 import { CartProvider } from "./src/context/CartContext";
 import AppNavigator from "./src/navigation/AppNavigator";
+import { StripeProvider } from "./src/services/local/stripeNative";
 
 // Configure notification handler for foreground notifications
 Notifications.setNotificationHandler({
@@ -33,10 +33,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Stripe publishable key from .env (falls back to Stripe test key if not set)
+// Stripe publishable key from .env
 const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
-  "pk_test_TYooMQauvdEDq54NiTphI7jx";
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 const STRIPE_MERCHANT_ID =
   process.env.EXPO_PUBLIC_STRIPE_MERCHANT_ID ||
   "merchant.com.matlhape.coffeeshop";

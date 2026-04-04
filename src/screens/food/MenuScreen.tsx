@@ -1,20 +1,26 @@
 // Menu Screen - browse by category with filtering
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    Category,
-    dataService,
-    FoodItem,
+  Category,
+  dataService,
+  FoodItem,
 } from "../../services/local/dataService";
 import { COLORS } from "../../utils/constants";
 
@@ -34,6 +40,7 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation, route }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allItems, setAllItems] = useState<FoodItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const foodListRef = useRef<FlatList<FoodItem> | null>(null);
 
   // Reload data from AsyncStorage every time this screen gains focus
   useFocusEffect(
@@ -98,6 +105,8 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation, route }) => {
       >
         <Text style={styles.categoryChipIcon}>{item.icon}</Text>
         <Text
+          allowFontScaling={false}
+          numberOfLines={1}
           style={[
             styles.categoryChipText,
             isSelected && styles.categoryChipTextActive,
@@ -154,6 +163,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation, route }) => {
   const allCategory = { id: "all", name: "All", icon: "🍴" };
   const categoryData = [allCategory, ...categories];
 
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      foodListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    });
+  }, [selectedCategory, searchQuery]);
+
   return (
     <View style={styles.container}>
       {/* Search Bar */}
@@ -194,6 +209,7 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation, route }) => {
 
       {/* Food Grid */}
       <FlatList
+        ref={foodListRef}
         data={filteredItems}
         renderItem={renderFoodItem}
         keyExtractor={(item) => item.id}
@@ -201,6 +217,7 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation, route }) => {
         contentContainerStyle={styles.foodGrid}
         columnWrapperStyle={styles.foodRow}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={<View style={styles.foodGridTopSpacer} />}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>🔍</Text>
@@ -247,11 +264,14 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   categoryScroll: {
-    maxHeight: 60,
+    minHeight: 50,
+    maxHeight: 50,
+    marginTop: 10,
+    marginBottom: 12,
   },
   categoryList: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 0,
     alignItems: "center",
   },
   categoryChip: {
@@ -285,7 +305,7 @@ const styles = StyleSheet.create({
   },
   resultsHeader: {
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 10,
   },
   resultsCount: {
     fontSize: 13,
@@ -294,7 +314,11 @@ const styles = StyleSheet.create({
   },
   foodGrid: {
     paddingHorizontal: 12,
+    paddingTop: 0,
     paddingBottom: 20,
+  },
+  foodGridTopSpacer: {
+    height: 4,
   },
   foodRow: {
     justifyContent: "space-between",

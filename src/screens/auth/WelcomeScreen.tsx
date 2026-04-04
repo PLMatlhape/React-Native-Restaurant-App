@@ -1,7 +1,6 @@
 // Welcome/Splash Screen - improved with Lottie animation
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
-    ActivityIndicator,
     Dimensions,
     StatusBar,
     StyleSheet,
@@ -9,40 +8,16 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import BeanAnimation from "../../components/common/BeanAnimation";
 import { COLORS } from "../../utils/constants";
 
-// Safe Lottie import
-let LottieView: any = null;
-try {
-  LottieView = require("lottie-react-native").default;
-} catch (e) {
-  console.warn("LottieView not available in WelcomeScreen:", e);
-}
-
-let CoffeeLoveAnimation: any = null;
-try {
-  CoffeeLoveAnimation = require("../../../assets/icon/Coffee love.json");
-} catch (e) {
-  console.warn("Lottie animation not found:", e);
-}
-
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 interface WelcomeScreenProps {
   navigation: any;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
-  const animationRef = useRef<any>(null);
-
-  useEffect(() => {
-    try {
-      animationRef.current?.play();
-    } catch (e) {
-      console.warn("Lottie play failed:", e);
-    }
-  }, []);
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
@@ -50,29 +25,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       {/* Top Section */}
       <View style={styles.topSection}>
         <View style={styles.animationContainer}>
-          {LottieView && CoffeeLoveAnimation ? (
-            <LottieView
-              ref={animationRef}
-              source={CoffeeLoveAnimation}
-              autoPlay
-              loop
-              style={styles.animation}
-            />
-          ) : (
-            <View
-              style={[
-                styles.animation,
-                { alignItems: "center", justifyContent: "center" },
-              ]}
-            >
-              <Text style={{ fontSize: 80 }}>☕</Text>
-              <ActivityIndicator
-                size="large"
-                color={COLORS.white}
-                style={{ marginTop: 16 }}
-              />
-            </View>
-          )}
+          <BeanAnimation size={Math.min(width * 0.7, 280)} />
         </View>
       </View>
 
@@ -124,10 +77,6 @@ const styles = StyleSheet.create({
     height: width * 0.7,
     alignItems: "center",
     justifyContent: "center",
-  },
-  animation: {
-    width: "100%",
-    height: "100%",
   },
   bottomSection: {
     backgroundColor: COLORS.white,
