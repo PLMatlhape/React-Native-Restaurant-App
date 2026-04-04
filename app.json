@@ -4,7 +4,7 @@
     "slug": "React-Native-Restaurant-App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon/icons8-cup-64.png",
+    "icon": "./assets/icon/app-cup-launcher-bold.png",
     "scheme": "coffeeshop",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -17,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6F4E37",
-        "foregroundImage": "./assets/icon/icons8-cup-64.png"
+        "foregroundImage": "./assets/icon/app-cup-foreground-bold-white.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.matlhape.ReactNativeRestaurantApp"
@@ -26,19 +26,19 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icon/icons8-cup-64.png",
-          "imageWidth": 120,
+          "image": "./assets/icon/app-cup-launcher-bold.png",
+          "imageWidth": 112,
           "resizeMode": "contain",
           "backgroundColor": "#6F4E37",
           "dark": {
-            "backgroundColor": "#3E2723"
+            "backgroundColor": "#6F4E37"
           }
         }
       ],
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon/icons8-cup-64.png",
+          "icon": "./assets/icon/app-cup-foreground-bold-white.png",
           "color": "#6F4E37"
         }
       ]

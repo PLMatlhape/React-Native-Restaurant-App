@@ -8,7 +8,6 @@ import React, {
     useState,
 } from "react";
 import {
-    ActivityIndicator,
     Alert,
     FlatList,
     Image,
@@ -24,6 +23,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Loading from "../../components/common/Loading";
 import { dataService, FoodItem } from "../../services/local/dataService";
 import { COLORS } from "../../utils/constants";
 import { categoryImages, getImageForFood } from "../../utils/imageMap";
@@ -685,21 +685,7 @@ const AdminMenuScreen: React.FC = () => {
   // ============================================
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <Image
-          source={require("../../../assets/icon/icons8-list-50 (1).png")}
-          style={{
-            width: 40,
-            height: 40,
-            tintColor: COLORS.primary,
-            marginBottom: 12,
-          }}
-        />
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading menu...</Text>
-      </View>
-    );
+    return <Loading visible fullScreen message="" lottieSize={180} />;
   }
 
   return (

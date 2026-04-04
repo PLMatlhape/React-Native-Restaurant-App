@@ -6,7 +6,8 @@ import { Platform } from "react-native";
 
 // Stripe publishable key from .env
 export const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+  "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS";
 
 // Backend server URL — use your machine's LAN IP for real-device testing
 // e.g. "http://192.168.x.x:3001"
@@ -34,12 +35,6 @@ export const stripeService = {
     amountInRands: number,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResponse> => {
-    if (!STRIPE_PUBLISHABLE_KEY) {
-      throw new Error(
-        "Stripe publishable key is missing. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
-      );
-    }
-
     const response = await fetch(`${BACKEND_URL}/api/payments/create-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

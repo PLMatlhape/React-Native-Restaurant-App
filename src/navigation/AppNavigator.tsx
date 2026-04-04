@@ -20,7 +20,6 @@ import { COLORS } from "../utils/constants";
 // Auth Screens
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
-import WelcomeScreen from "../screens/auth/WelcomeScreen";
 
 // Main Screens
 import ProfileScreen from "../screens/auth/ProfileScreen";
@@ -60,7 +59,6 @@ const Tab = createBottomTabNavigator();
 
 const AuthStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Welcome" component={WelcomeScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
   </Stack.Navigator>
@@ -434,14 +432,14 @@ const AdminTabs: React.FC = () => (
 
 const AppNavigator: React.FC = () => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  const [showSplash, setShowSplash] = useState(true);
+  const [minimumSplashDone, setMinimumSplashDone] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000);
+    const timer = setTimeout(() => setMinimumSplashDone(true), 700);
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading || showSplash) {
+  if (loading || !minimumSplashDone) {
     return <Loading fullScreen message="Welcome to Coffee Shop..." />;
   }
 

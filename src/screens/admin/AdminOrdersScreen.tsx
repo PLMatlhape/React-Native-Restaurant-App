@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Loading from "../../components/common/Loading";
 import { notificationService } from "../../services/local/notificationService";
 import {
     Order,
@@ -448,15 +449,7 @@ const AdminOrdersScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <Image
-          source={require("../../../assets/icon/icons8-list-50 (1).png")}
-          style={{ width: 50, height: 50, tintColor: COLORS.primary }}
-        />
-        <Text style={styles.loadingText}>Loading orders...</Text>
-      </View>
-    );
+    return <Loading visible fullScreen message="" lottieSize={180} />;
   }
 
   return (

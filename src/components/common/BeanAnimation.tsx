@@ -29,7 +29,10 @@ const BeanAnimation: React.FC<BeanAnimationProps> = ({ size = 220 }) => {
 
   return (
     <View
-      style={[styles.container, { width: size, height: size }]}
+      style={[
+        styles.container,
+        { width: size, height: size, borderRadius: size / 2 },
+      ]}
       onLayout={startLottie}
     >
       <LottieView
@@ -56,10 +59,13 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    backgroundColor: "transparent",
   },
   animation: {
     width: "100%",
     height: "100%",
+    backgroundColor: "transparent",
   },
   fallback: {
     alignItems: "center",

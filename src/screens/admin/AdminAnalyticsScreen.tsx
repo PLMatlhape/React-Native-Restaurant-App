@@ -1,7 +1,6 @@
 // Admin Analytics Screen - Purchase stats, charts, and insights
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
     Dimensions,
     Image,
     RefreshControl,
@@ -11,10 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import {
-    Order,
-    orderService
-} from "../../services/local/orderService";
+import Loading from "../../components/common/Loading";
+import { Order, orderService } from "../../services/local/orderService";
 import { COLORS } from "../../utils/constants";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -388,12 +385,7 @@ const AdminAnalyticsScreen: React.FC = () => {
   // ============================================
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading analytics...</Text>
-      </View>
-    );
+    return <Loading visible fullScreen message="" lottieSize={180} />;
   }
 
   return (

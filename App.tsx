@@ -35,7 +35,8 @@ Notifications.setNotificationHandler({
 
 // Stripe publishable key from .env
 const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+  "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS";
 const STRIPE_MERCHANT_ID =
   process.env.EXPO_PUBLIC_STRIPE_MERCHANT_ID ||
   "merchant.com.matlhape.coffeeshop";

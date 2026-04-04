@@ -7,11 +7,21 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS",
+        "EXPO_PUBLIC_STRIPE_MERCHANT_ID": "merchant.com.matlhape.coffeeshop",
+        "EXPO_PUBLIC_BACKEND_URL": "https://react-native-restaurant-app.onrender.com"
+      }
     },
     "apk": {
       "distribution": "internal",
       "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS",
+        "EXPO_PUBLIC_STRIPE_MERCHANT_ID": "merchant.com.matlhape.coffeeshop",
+        "EXPO_PUBLIC_BACKEND_URL": "https://react-native-restaurant-app.onrender.com"
+      },
       "android": {
         "buildType": "apk"
       }
@@ -19,6 +29,11 @@
     "showcase": {
       "distribution": "internal",
       "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS",
+        "EXPO_PUBLIC_STRIPE_MERCHANT_ID": "merchant.com.matlhape.coffeeshop",
+        "EXPO_PUBLIC_BACKEND_URL": "https://react-native-restaurant-app.onrender.com"
+      },
       "android": {
         "buildType": "apk"
       },
@@ -28,11 +43,21 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS",
+        "EXPO_PUBLIC_STRIPE_MERCHANT_ID": "merchant.com.matlhape.coffeeshop",
+        "EXPO_PUBLIC_BACKEND_URL": "https://react-native-restaurant-app.onrender.com"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51T9kH7FN5o3zPyVhIf38017xtfXJa4H3N7Dqo43vONgad7VlXRq87Ix0PfgQKrYaIEl6IHbUD5JxOXgu0qenoXPQ00antJqPpS",
+        "EXPO_PUBLIC_STRIPE_MERCHANT_ID": "merchant.com.matlhape.coffeeshop",
+        "EXPO_PUBLIC_BACKEND_URL": "https://react-native-restaurant-app.onrender.com"
+      }
     }
   },
   "submit": {

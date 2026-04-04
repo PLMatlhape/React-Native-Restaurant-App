@@ -2,13 +2,13 @@
 import React from "react";
 import {
     Dimensions,
+    Image,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
-import BeanAnimation from "../../components/common/BeanAnimation";
 import { COLORS } from "../../utils/constants";
 
 const { width } = Dimensions.get("window");
@@ -25,7 +25,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       {/* Top Section */}
       <View style={styles.topSection}>
         <View style={styles.animationContainer}>
-          <BeanAnimation size={Math.min(width * 0.7, 280)} />
+          <View style={styles.iconBadge}>
+            <Image
+              source={require("../../../assets/icon/icons8-coffee-cup-64.png")}
+              style={styles.topIcon}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       </View>
 
@@ -73,10 +79,23 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   animationContainer: {
-    width: width * 0.7,
-    height: width * 0.7,
+    width: Math.min(width * 0.7, 280),
+    height: Math.min(width * 0.7, 280),
     alignItems: "center",
     justifyContent: "center",
+  },
+  iconBadge: {
+    width: Math.min(width * 0.42, 170),
+    height: Math.min(width * 0.42, 170),
+    borderRadius: Math.min(width * 0.21, 85),
+    backgroundColor: COLORS.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  topIcon: {
+    width: "58%",
+    height: "58%",
+    tintColor: COLORS.white,
   },
   bottomSection: {
     backgroundColor: COLORS.white,
